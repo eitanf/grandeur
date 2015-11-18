@@ -31,13 +31,13 @@ class Gems {
     int totalGems() const;
 
     // How many different gem colors have non-zero quantities?
-    int totalColors() const;
+    long totalColors() const;
 
     // Does any gem color appear in negative quantities?
     bool hasNegatives() const;
 
     // What is the maximum quantity of gems of any color?
-    bool maxQuantity() const;
+    count_t maxQuantity() const;
 
     count_t getCount(gem_color_t color) const { return gems_.at(color); }
 

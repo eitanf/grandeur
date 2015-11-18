@@ -2,6 +2,7 @@
 // Created by eitan on 11/18/15.
 //
 
+#include <algorithm>
 #include <iostream>
 
 #include "gems.h"
@@ -10,22 +11,24 @@ namespace grandeur {
 
 int Gems::totalGems() const
 {
-    return 0;
+    return std::accumulate(gems_.cbegin(), gems_.cend(), 0);
 }
 
-int Gems::totalColors() const
+long Gems::totalColors() const
 {
-    return 0;
+    return std::count_if(gems_.cbegin(), gems_.cend(),
+                         [](auto v){ return (v != 0);});
 }
 
 bool Gems::hasNegatives() const
 {
-    return false;
+    return std::any_of(gems_.cbegin(), gems_.cend(),
+                       [](auto v){ return (v < 0);});
 }
 
-bool Gems::maxQuantity() const
+count_t Gems::maxQuantity() const
 {
-    return false;
+    return *std::max_element(gems_.cbegin(), gems_.cend());
 }
 
 std::ostream& operator<<(std::ostream& os, const Gems& gems)

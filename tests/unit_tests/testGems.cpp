@@ -16,7 +16,7 @@ TEST(gemsTest, ctorFromInitializerList)
 
 class shortGems : public ::testing::Test {
   public:
-    shortGems() : data_(1, 2, 3, 4) {} // Note: not BLACK or YELLOW)
+    shortGems() : data_(1, 2, 3, -4) {} // Note: not BLACK or YELLOW)
     Gems data_;
 };
 
@@ -30,3 +30,22 @@ TEST_F(shortGems, ctorZerosRemaining)
     EXPECT_EQ(data_.getCount(YELLOW), 0);
 }
 
+TEST_F(shortGems, countTotalGems)
+{
+    EXPECT_EQ(data_.totalGems(), 2);
+}
+
+TEST_F(shortGems, countColors) {
+    EXPECT_EQ(data_.totalColors(), 4);
+}
+
+TEST_F(shortGems, detectNegative)
+{
+    EXPECT_TRUE(data_.hasNegatives());
+    EXPECT_FALSE(Gems().hasNegatives());
+    EXPECT_FALSE(Gems(1,2,3,4,5,6).hasNegatives());
+}
+
+TEST_F(shortGems, verifyMaxQuantity) {
+    ASSERT_EQ(data_.maxQuantity(), 3);
+}
