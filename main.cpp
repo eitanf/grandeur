@@ -10,6 +10,8 @@
 
 #include "mechanics.h"
 
+namespace grandeur {
+
 void parseCmdline(int argc, char **argv)
 {
 
@@ -26,8 +28,12 @@ void createBoard()
 
 }
 
+}  // namspace
+
 int main(int argc, char** argv)
 {
+    using namespace grandeur;
+
     parseCmdline(argc, argv);
     createPlayers();
     createBoard();

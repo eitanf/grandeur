@@ -5,8 +5,10 @@
 
 #pragma once
 
+namespace grandeur {
 /*
  * mainGaimLoop is the run an entire new game.
  */
 void mainGameLoop();
 
+}

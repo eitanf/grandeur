@@ -4,7 +4,11 @@
 
 #include "mechanics.h"
 
+namespace grandeur {
+
 void mainGameLoop()
 {
+
+}
 
 }
