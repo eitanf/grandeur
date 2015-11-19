@@ -13,9 +13,11 @@
 
 namespace grandeur {
 
-using gem_color_t = enum {
+enum gem_color_t {
     WHITE = 0, TEAL = 1, GREEN = 2, RED = 3, BLACK = 4, YELLOW = 5
 };
+
+static constexpr char color2char[] = { 'W', 'T', 'G', 'R', 'B', 'Y' };
 
 namespace {
 using count_t = int8_t;  // We don't expect more than 127 gems of each color
@@ -25,7 +27,7 @@ class Gems {
   public:
     // Catch-all constructor for gems
     template <typename... T>
-    Gems(T... args) : gems_{static_cast<count_t>(args)...} {}
+    constexpr Gems(T... args) : gems_{static_cast<count_t>(args)...} {}
 
     // How many gems we have in total (substracting negatives)
     int totalGems() const;
