@@ -14,6 +14,31 @@ TEST(gemsTest, ctorFromInitializerList)
     EXPECT_NO_THROW(Gems({1, 2, 3, -1, 5, 0}));
 }
 
+TEST(gemsTest, substraction)
+{
+    Gems x(1, 2, 3, 4), y(5, 4, 3, 2, 1), z;
+
+    EXPECT_EQ(x - y, Gems(-4, -2, 0, 2, -1, 0));
+    EXPECT_EQ(z, Gems(0, 0, 0, 0, 0, 0));
+    EXPECT_EQ(y - x, Gems(4, 2, 0, -2, 1, 0));
+    EXPECT_EQ(x - x, z);
+    EXPECT_EQ(x - z, x);
+    EXPECT_EQ(z - x, Gems(-1, -2, -3, -4));
+    EXPECT_NE(x - y, y - x);
+}
+
+TEST(gemsTest, addition)
+{
+    Gems x(1, 2, 3, 4), y(5, 4, 3, 2, 1), z;
+
+    EXPECT_EQ(x + x, Gems(2, 4, 6, 8, 0, 0));
+    EXPECT_EQ(x + y, Gems(6, 6, 6, 6, 1));
+    EXPECT_EQ(y + x, x + y);
+    EXPECT_EQ(x + z - x, z);
+    EXPECT_EQ(x + z, x);
+    EXPECT_EQ(z + z, z);
+}
+
 class shortGems : public ::testing::Test {
   public:
     shortGems() : data_(1, 2, 3, -4) {} // Note: not BLACK or YELLOW)

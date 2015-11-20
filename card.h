@@ -6,14 +6,14 @@
 #pragma once
 
 #include "gems.h"
-#include "mechanics.h"
+#include "constants.h"
 
+#include <algorithm>
 #include <iosfwd>
 #include <vector>
 
 namespace grandeur {
 
-// We have three types of decks, based on their typical prestige point value
 enum deck_t { LOW = 0, MEDIUM = 1, HIGH = 2};
 
 // A unique identifier for card consists of its deck type and a sequential number.
@@ -29,23 +29,36 @@ struct CardID {
 // color it will discount, and a number of prestige points it awards (can be zero)
 struct Card {
   public:
-    constexpr Card(CardID id, const Gems& cost, gem_color_t color, prestige_t points)
+    constexpr Card(CardID id, const Gems& cost, gem_color_t color, points_t points)
       : id_(id), cost_(cost), color_(color), points_(points)
     {}
 
     CardID id_;
     Gems cost_;
     gem_color_t color_;
-    prestige_t points_;
+    points_t points_;
 };
 
 std::ostream& operator<<(std::ostream&, const Card&);
 
-using Cards = std::vector<const Card>;
+using Cards = std::vector<Card>;
+
+// How many cards belong to a given deck type
+template <class Container>
+long deckCount(const Container& cards, deck_t dt)
+{
+    return std::count_if(std::begin(cards), std::end(cards), [dt](const Card& card) {
+        return (card.id_.type_ == dt ? 1 : 0);
+    });
+}
+
+
+// An "empty" card:
+static constexpr Card NULL_CARD = { { LOW, 0 }, { }, YELLOW, 0 };
 
 // Global constant card list for the full set of game cards.
 static constexpr const Card g_deck[] = {
-        { { LOW, 1 }, { 1, 1, 1, 1, 0 }, BLACK, 0 },
+        { { LOW, 0 }, { 1, 1, 1, 1, 0 }, BLACK, 0 },
         { { LOW, 1 }, { 1, 2, 1, 1, 0 }, BLACK, 0 },
         { { LOW, 2 }, { 2, 2, 0, 1, 0 }, BLACK, 0 },
         { { LOW, 3 }, { 0, 0, 1, 3, 1 }, BLACK, 0 },

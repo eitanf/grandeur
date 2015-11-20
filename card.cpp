@@ -2,7 +2,6 @@
 // Created by eitan on 11/19/15.
 //
 
-#include <cassert>
 #include <iostream>
 
 #include "card.h"
@@ -21,5 +20,6 @@ operator<<(std::ostream& os, const Card& card)
 
     return os;
 }
+
 
 } // namespace

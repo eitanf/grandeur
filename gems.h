@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include "constants.h"
+
 #include <array>
 #include <iosfwd>
 
@@ -19,15 +21,12 @@ enum gem_color_t {
 
 static constexpr char color2char[] = { 'W', 'T', 'G', 'R', 'B', 'Y' };
 
-namespace {
-using count_t = int8_t;  // We don't expect more than 127 gems of each color
-}
 
 class Gems {
   public:
     // Catch-all constructor for gems
     template <typename... T>
-    constexpr Gems(T... args) : gems_{static_cast<count_t>(args)...} {}
+    constexpr Gems(T... args) : gems_{static_cast<gem_count_t>(args)...} {}
 
     // How many gems we have in total (substracting negatives)
     int totalGems() const;
@@ -39,15 +38,30 @@ class Gems {
     bool hasNegatives() const;
 
     // What is the maximum quantity of gems of any color?
-    count_t maxQuantity() const;
+    gem_count_t maxQuantity() const;
 
-    count_t getCount(gem_color_t color) const { return gems_.at(color); }
+    gem_count_t getCount(gem_color_t color) const { return gems_.at(color); }
 
     friend std::ostream& operator<<(std::ostream&, const Gems&);
 
+    Gems operator-(const Gems& rhs) const;
+    Gems operator+(const Gems& rhs) const;
+
+    bool operator==(const Gems& rhs) const { return gems_ == rhs.gems_; }
+    bool operator!=(const Gems& rhs) const { return !(*this == rhs); }
+
   private:
-    std::array<count_t, 6> gems_;
+    static constexpr unsigned NCOLOR = 6;
+    std::array<gem_count_t, NCOLOR> gems_;
 };
 
+// A mapping from the no. of players (2--4) to the initial table gem allocation:
+static constexpr const Gems g_gem_allocation[] = {
+        Gems(),
+        Gems(),
+        { INITIAL_GEMS[2], INITIAL_GEMS[2], INITIAL_GEMS[2], INITIAL_GEMS[2], INITIAL_GEMS[2], YELLOW_COUNT },
+        { INITIAL_GEMS[3], INITIAL_GEMS[3], INITIAL_GEMS[3], INITIAL_GEMS[3], INITIAL_GEMS[3], YELLOW_COUNT },
+        { INITIAL_GEMS[4], INITIAL_GEMS[4], INITIAL_GEMS[4], INITIAL_GEMS[4], INITIAL_GEMS[4], YELLOW_COUNT },
+};
 
-}
+} // namepscae
