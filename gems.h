@@ -42,6 +42,8 @@ class Gems {
 
     gem_count_t getCount(gem_color_t color) const { return gems_.at(color); }
 
+    bool empty() const { return (totalColors() == 0); }
+
     friend std::ostream& operator<<(std::ostream&, const Gems&);
 
     Gems operator-(const Gems& rhs) const;

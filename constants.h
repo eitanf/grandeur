@@ -46,8 +46,8 @@ static constexpr gem_count_t INITIAL_NOBLES[] = { -1, -1, 3, 4, 5};
 static constexpr unsigned INITIAL_DECK_CARDS_NUMBER = 4;
 
 
-enum class MoveStatus {
-    LEGAL = 0,
+enum MoveStatus {
+    LEGAL_MOVE = 0,
     TAKING_YELLOW,   // Can't ask to take a yellow token from table
     INSUFFICIENT_TABLE_GEMS, // Trying to take unavailable gems
     TOO_MANY_GEMS,  // Can't collect more than MAX_PLAYER_GEMS

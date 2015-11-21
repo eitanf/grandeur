@@ -19,6 +19,11 @@ enum deck_t { LOW = 0, MEDIUM = 1, HIGH = 2};
 // A unique identifier for card consists of its deck type and a sequential number.
 struct CardID {
   public:
+    bool operator==(const CardID& rhs) const
+    {
+        return (type_ == rhs.type_ && seq_ == rhs.seq_);
+    }
+
     using seq_t = unsigned;
 
     deck_t type_;
@@ -32,6 +37,13 @@ struct Card {
     constexpr Card(CardID id, const Gems& cost, gem_color_t color, points_t points)
       : id_(id), cost_(cost), color_(color), points_(points)
     {}
+    Card(const Card&) = default;
+    Card(Card&&) = default;
+    Card& operator=(const Card&) = default;
+    Card& operator=(Card&&) = default;
+
+    bool operator==(const Card& rhs) const { return id_ == rhs.id_; }
+
 
     CardID id_;
     Gems cost_;
