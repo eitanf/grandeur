@@ -3,11 +3,13 @@
 //
 
 #include <algorithm>
+#include <cassert>
 #include <iostream>
 
 #include "gems.h"
 
 namespace grandeur {
+
 
 int Gems::totalGems() const
 {
@@ -31,22 +33,38 @@ gem_count_t Gems::maxQuantity() const
     return *std::max_element(gems_.cbegin(), gems_.cend());
 }
 
-Gems Gems::operator-(const Gems& rhs) const
+
+// Target may have negative-cost colors if we have "too much" discount.
+Gems Gems::actualCost(const Gems& cost) const
 {
-    Gems ret(*this);
-    for (size_t i = 0; i < NCOLOR; ++i) {
-        ret.gems_[i] -= rhs.gems_[i];
+    assert(!hasNegatives() && "Can't pay with negative gems");
+    assert(cost.gems_[YELLOW] == 0 && "Can't require a target with yellow");
+    Gems ret;
+
+    for (int color = 0; color < NCOLOR - 1; ++color) {
+        const auto positiveCost = std::max(cost.gems_[color], gem_count_t(0));
+        ret.gems_[color] = std::min(gems_[color], positiveCost);
+        ret.gems_[YELLOW] += std::max(0, positiveCost - gems_[color]);
     }
     return ret;
 }
 
-Gems Gems::operator+(const Gems& rhs) const
+
+Gems& Gems::operator-=(const Gems& rhs)
+{
+    for (size_t i = 0; i < NCOLOR; ++i) {
+        this->gems_[i] -= rhs.gems_[i];
+    }
+    return *this;
+}
+
+Gems& Gems::operator+=(const Gems& rhs)
 {
     Gems ret(*this);
     for (size_t i = 0; i < NCOLOR; ++i) {
-        ret.gems_[i] += rhs.gems_[i];
+        this->gems_[i] += rhs.gems_[i];
     }
-    return ret;
+    return *this;
 }
 
 std::ostream& operator<<(std::ostream& os, const Gems& gems)

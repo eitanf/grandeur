@@ -39,9 +39,33 @@ TEST(gemsTest, addition)
     EXPECT_EQ(z + z, z);
 }
 
+TEST(gemsTest, actualCost)
+{
+    Gems gems({ 1, 2, 0, 3, 0, 2 });
+
+    // Nothing costs nothing.
+    EXPECT_EQ(gems.actualCost(Gems()), Gems());
+    // No discounts, no shortages:
+    EXPECT_EQ(gems.actualCost(Gems({1, 1, 0, 3, 0})), Gems({1, 1, 0, 3, 0, 0}));
+    // Discounts:
+    EXPECT_EQ(gems.actualCost(Gems({1, 2, -1, 3, -5})), Gems({1, 2, 0, 3, 0, 0}));
+    // Some shortage
+    EXPECT_EQ(gems.actualCost(Gems({2, 2, 0, 3, 0})), Gems({1, 2, 0, 3, 0, 1}));
+    // Complete shortage:
+    EXPECT_EQ(gems.actualCost(Gems({2, 2, 0, 3, 1})), Gems({1, 2, 0, 3, 0, 2}));
+    // Over shortage:
+    EXPECT_EQ(gems.actualCost(Gems({4, 0, 0, 0, 0})), Gems({1, 0, 0, 0, 0, 3}));
+    // Shortage everywhere:
+    EXPECT_EQ(gems.actualCost(Gems({2, 3, 1, 4, 1})), Gems({1, 2, 0, 3, 0, 5}));
+    // Shortage and discounts:
+    EXPECT_EQ(gems.actualCost(Gems({2, 3, -1, -5, -2})), Gems({1, 2, 0, 0, 0, 2}));
+    // Too much shortage despite too much discount:
+    EXPECT_EQ(gems.actualCost(Gems({5, -5, -5, -5})), Gems({1, 0, 0, 0, 0, 4}));
+}
+
 class shortGems : public ::testing::Test {
   public:
-    shortGems() : data_(1, 2, 3, -4) {} // Note: not BLACK or YELLOW)
+    shortGems() : data_(1, 2, 3, -4) {} // Note: no BLACK or YELLOW)
     Gems data_;
 };
 

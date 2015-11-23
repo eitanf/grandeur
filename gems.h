@@ -28,6 +28,9 @@ class Gems {
     template <typename... T>
     constexpr Gems(T... args) : gems_{static_cast<gem_count_t>(args)...} {}
 
+    // Increment gem count for one color:
+    int inc(gem_color_t color) { ++gems_[color]; }
+
     // How many gems we have in total (substracting negatives)
     int totalGems() const;
 
@@ -44,10 +47,20 @@ class Gems {
 
     bool empty() const { return (totalColors() == 0); }
 
+    // Returns the amount of gems from each color that need to be substracted from this
+    // to pay for target. Automatically matches yellow gems in this with insufficient
+    // gems in target as necessary. But the actual cost may still exceed this if there
+    // are insufficient yellows.
+    Gems actualCost(const Gems& target) const;
+
     friend std::ostream& operator<<(std::ostream&, const Gems&);
 
-    Gems operator-(const Gems& rhs) const;
-    Gems operator+(const Gems& rhs) const;
+
+    Gems& operator+=(const Gems& rhs);
+    Gems& operator-=(const Gems& rhs);
+
+    friend Gems operator-(Gems lhs, const Gems& rhs) { lhs += rhs; return lhs; }
+    friend Gems operator+(Gems lhs, const Gems& rhs) { lhs -= rhs; return lhs; }
 
     bool operator==(const Gems& rhs) const { return gems_ == rhs.gems_; }
     bool operator!=(const Gems& rhs) const { return !(*this == rhs); }
