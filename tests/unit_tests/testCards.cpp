@@ -28,7 +28,7 @@ TEST(cardTests, correctCost)
 // Check that the original deck size conforms to original specs:
 TEST(cardTests, correctSize)
 {
-    EXPECT_EQ(deckCount(g_deck, LOW), 40);
-    EXPECT_EQ(deckCount(g_deck, MEDIUM), 30);
-    EXPECT_EQ(deckCount(g_deck, HIGH), 20);
+    EXPECT_EQ(deckCount(LOW, g_deck), 40);
+    EXPECT_EQ(deckCount(MEDIUM, g_deck), 30);
+    EXPECT_EQ(deckCount(HIGH, g_deck), 20);
 }

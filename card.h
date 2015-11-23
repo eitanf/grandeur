@@ -10,6 +10,7 @@
 
 #include <algorithm>
 #include <iosfwd>
+#include <utility>
 #include <vector>
 
 namespace grandeur {
@@ -24,11 +25,16 @@ struct CardID {
         return (type_ == rhs.type_ && seq_ == rhs.seq_);
     }
 
-    using seq_t = unsigned;
+    using seq_t = int;
+    static constexpr seq_t WILDCARD = -1;  // Flag value for any card of deck.
+    static constexpr seq_t NULLCARD = -2;  // Flag value for unset card.
 
     deck_t type_;
     seq_t seq_;
 };
+
+std::ostream& operator<<(std::ostream&, const CardID&);
+
 
 // Each card has a unique identifier, resource cost in gems, the permanent gem
 // color it will discount, and a number of prestige points it awards (can be zero)
@@ -57,16 +63,33 @@ using Cards = std::vector<Card>;
 
 // How many cards belong to a given deck type
 template <class Container>
-long deckCount(const Container& cards, deck_t dt)
+long deckCount(deck_t dt, const Container& cards)
 {
     return std::count_if(std::begin(cards), std::end(cards), [dt](const Card& card) {
         return (card.id_.type_ == dt ? 1 : 0);
     });
 }
 
+// Return an iterator to a card collection for where a given card id is (or end() if not):
+template <class Container>
+auto cardLocation(CardID cid, Container&& cards)
+{
+    return (std::find_if(std::begin(std::forward<Container>(cards)),
+                         std::end(std::forward<Container>(cards)),
+                         [cid](const Card& card) {
+        return cid == card.id_;
+    }));
+}
 
-// An "empty" card:
-static constexpr Card NULL_CARD = { { LOW, 0 }, { }, YELLOW, 0 };
+// Check if a given card is in a container of cards:
+template <class Container>
+bool cardIn(CardID cid, const Container& cards) {
+    return (std::end(cards) != cardLocation(cid, cards));
+}
+
+
+// Define an "empty" card:
+static constexpr Card NULL_CARD = { { LOW, CardID::NULLCARD }, { }, YELLOW, 0 };
 
 // Global constant card list for the full set of game cards.
 static constexpr const Card g_deck[] = {

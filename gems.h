@@ -28,8 +28,9 @@ class Gems {
     template <typename... T>
     constexpr Gems(T... args) : gems_{static_cast<gem_count_t>(args)...} {}
 
-    // Increment gem count for one color:
-    int inc(gem_color_t color) { ++gems_[color]; }
+    // Increment/decrement gem count for one color:
+    int inc(gem_color_t color) { return ++gems_[color]; }
+    int dec(gem_color_t color) { return --gems_[color]; }
 
     // How many gems we have in total (substracting negatives)
     int totalGems() const;
@@ -59,8 +60,8 @@ class Gems {
     Gems& operator+=(const Gems& rhs);
     Gems& operator-=(const Gems& rhs);
 
-    friend Gems operator-(Gems lhs, const Gems& rhs) { lhs += rhs; return lhs; }
-    friend Gems operator+(Gems lhs, const Gems& rhs) { lhs -= rhs; return lhs; }
+    friend Gems operator+(Gems lhs, const Gems& rhs) { lhs += rhs; return lhs; }
+    friend Gems operator-(Gems lhs, const Gems& rhs) { lhs -= rhs; return lhs; }
 
     bool operator==(const Gems& rhs) const { return gems_ == rhs.gems_; }
     bool operator!=(const Gems& rhs) const { return !(*this == rhs); }

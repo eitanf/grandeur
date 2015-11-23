@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <cassert>
 #include <iostream>
+#include <iomanip>
 
 #include "gems.h"
 
@@ -60,7 +61,6 @@ Gems& Gems::operator-=(const Gems& rhs)
 
 Gems& Gems::operator+=(const Gems& rhs)
 {
-    Gems ret(*this);
     for (size_t i = 0; i < NCOLOR; ++i) {
         this->gems_[i] += rhs.gems_[i];
     }
@@ -69,12 +69,12 @@ Gems& Gems::operator+=(const Gems& rhs)
 
 std::ostream& operator<<(std::ostream& os, const Gems& gems)
 {
-    os << "W: " << int(gems.gems_[0]);
-    os << " T: " << int(gems.gems_[1]);
-    os << " G: " << int(gems.gems_[2]);
-    os << " R: " << int(gems.gems_[3]);
-    os << " B: " << int(gems.gems_[4]);
-    os << " Y: " << int(gems.gems_[5]);
+    os << "W: " << std::setw(2) << int(gems.gems_[0]);
+    os << " T: " << std::setw(2) << int(gems.gems_[1]);
+    os << " G: " << std::setw(2) << int(gems.gems_[2]);
+    os << " R: " << std::setw(2) << int(gems.gems_[3]);
+    os << " B: " << std::setw(2) << int(gems.gems_[4]);
+    os << " Y: " << std::setw(2) << int(gems.gems_[5]);
     return os;
 }
 

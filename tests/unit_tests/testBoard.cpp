@@ -6,7 +6,6 @@
 
 #include "gtest/gtest.h"
 #include "board.h"
-#include "card.h"
 
 using namespace grandeur;
 
@@ -31,11 +30,17 @@ TEST(boardTests, ctor)
     EXPECT_EQ(board.playerPoints(0), 0);
     EXPECT_EQ(board.playerPoints(1), 0);
 
-    EXPECT_EQ(board.remainingCards(LOW), deckCount(g_deck, LOW) - 4);
-    EXPECT_EQ(board.remainingCards(MEDIUM), deckCount(g_deck, MEDIUM) - 4);
-    EXPECT_EQ(board.remainingCards(HIGH), deckCount(g_deck, HIGH) - 4);
+    EXPECT_EQ(board.remainingCards(LOW), deckCount(LOW, g_deck) - 4);
+    EXPECT_EQ(board.remainingCards(MEDIUM), deckCount(MEDIUM, g_deck) - 4);
+    EXPECT_EQ(board.remainingCards(HIGH), deckCount(HIGH, g_deck) - 4);
 }
 
+#define TAKE(p, gems) EXPECT_EQ(LEGAL_MOVE,                                 \
+        board_.makeMove(p, GameMove(gems), hidden_[p]))
+#define BUY(p, card, rep) EXPECT_EQ(LEGAL_MOVE,                              \
+        board_.makeMove(p, GameMove(card, MoveType::BUY_CARD), hidden_[p], rep))
+#define RESERVE(p, card, rep) EXPECT_EQ(LEGAL_MOVE,                          \
+        board_.makeMove(p, GameMove(card, MoveType::RESERVE_CARD), hidden_[p],  rep))
 
 class MidGameBoard : public ::testing::Test {
   public:
@@ -46,38 +51,29 @@ class MidGameBoard : public ::testing::Test {
          board_(nplayer_, initial_),
          hidden_()
     {
-        int ok = LEGAL_MOVE;
-
         // Make some game moves (6 rounds):
-        ok |= board_.takeGems(0, { 0, 2, 0, 0, 0 });
-        ok |= board_.takeGems(1, { 1, 1, 1, 0, 0 });
-        ok |= board_.takeGems(2, { 0, 0, 0, 2, 0 });
-        assert(ok == LEGAL_MOVE);
+        TAKE(0, Gems({ 0, 2, 0, 0, 0 }));
+        TAKE(1, Gems({ 1, 1, 1, 0, 0 }));
+        TAKE(2, Gems({ 0, 0, 0, 2, 0 }));
 
-        ok |= board_.takeGems(0, { 1, 1, 0, 1, 0 });
-        ok |= board_.takeGems(1, { 1, 1, 0, 1, 0 });
-        ok |= board_.takeGems(2, { 1, 0, 1, 1, 1 });
-        assert(ok == LEGAL_MOVE);
+        TAKE(0, Gems({ 1, 1, 0, 1, 0 }));
+        TAKE(1, Gems({ 1, 1, 0, 1, 0 }));
+        TAKE(2, Gems({ 0, 0, 1, 1, 1 }));
 
-        ok |= board_.reserveCard(0, { LOW, 7 }, hidden_[0]);
-        ok |= board_.buyCard(1, { LOW, 0 }, hidden_[1], g_deck[12]);
-        ok |= board_.buyCard(2, { LOW, 3 }, hidden_[2], g_deck[24]);
-        assert(ok == LEGAL_MOVE);
+        RESERVE(0, g_deck[7], NULL_CARD);
+        BUY(1, g_deck[0], g_deck[12]);
+        BUY(2, g_deck[3], g_deck[24]);
 
-        ok |= board_.buyCard(0, { LOW, 7 }, hidden_[0]);
-        ok |= board_.takeGems(1, { 1, 1, 0, 1, 0});
-        ok |= board_.takeGems(2, { 0, 1, 1, 1, 0});
-        assert(ok == LEGAL_MOVE);
+        BUY(0, g_deck[7], NULL_CARD);
+        TAKE(1, Gems({ 1, 1, 0, 1, 0 }));
+        TAKE(2, Gems({ 0, 1, 1, 1, 0 }));
 
-        ok |= board_.reserveCard(0, { MEDIUM, 42 }, hidden_[0]);
-        ok |= board_.buyCard(1, { LOW, 24 }, hidden_[1], g_deck[32]);
-        ok |= board_.takeGems(2, { 1, 1, 0, 1, 0});
-        assert(ok == LEGAL_MOVE);
-
-        ok |= board_.reserveCard(0, { LOW, 6 }, hidden_[1], g_deck[5]);
-        ok |= board_.buyCard(1, { LOW, 32 }, hidden_[2], g_deck[1]);
-        ok |= board_.buyCard(2, { LOW, 1 }, hidden_[2], NULL_CARD);
-        assert(ok == LEGAL_MOVE);
+        RESERVE(0, g_deck[42], NULL_CARD);  // MEDIUM
+        BUY(1, g_deck[24], g_deck[32]);
+        TAKE(2, Gems({ 1, 1, 0, 1, 0 }));
+        RESERVE(0, g_deck[6], g_deck[5]);
+        BUY(1, g_deck[32], g_deck[1]);
+        BUY(2, g_deck[1], NULL_CARD);
     }
 
     static constexpr unsigned nplayer_ = 3;
@@ -91,9 +87,9 @@ TEST_F(MidGameBoard, correctTableCards)
 {
     auto& tcards = board_.tableCards();
     EXPECT_EQ(tcards.size(), initial_.size() - 1);
-    EXPECT_EQ(deckCount(tcards, LOW), 3);
-    EXPECT_EQ(deckCount(tcards, MEDIUM), 4);
-    EXPECT_EQ(deckCount(tcards, HIGH), 4);
+    EXPECT_EQ(deckCount(LOW, tcards), 3);
+    EXPECT_EQ(deckCount(MEDIUM, tcards), 4);
+    EXPECT_EQ(deckCount(HIGH, tcards), 4);
 }
 
 TEST_F(MidGameBoard, correctReserves)
@@ -133,9 +129,9 @@ TEST_F(MidGameBoard, correctPoints)
 
 TEST_F(MidGameBoard, correctRemainingDecks)
 {
-    EXPECT_EQ(board_.remainingCards(LOW), deckCount(g_deck, LOW) - (4 + 7));
-    EXPECT_EQ(board_.remainingCards(MEDIUM), deckCount(g_deck, MEDIUM) - (4 + 1));
-    EXPECT_EQ(board_.remainingCards(HIGH), deckCount(g_deck, HIGH) - 4);
+    EXPECT_EQ(board_.remainingCards(LOW), deckCount(LOW, g_deck) - (4 + 7));
+    EXPECT_EQ(board_.remainingCards(MEDIUM), deckCount(MEDIUM, g_deck) - (4 + 1));
+    EXPECT_EQ(board_.remainingCards(HIGH), deckCount(HIGH, g_deck) - 4);
 }
 
 // Buy card, check all is OK
