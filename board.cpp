@@ -170,7 +170,7 @@ MoveStatus Board::reserveCard(Board::player_id_t pid, const Card& card,
     }
     else {              // A table card:
         playerReserves_[pid].push_back(card);
-        removeTableCard(where, replacement);
+        removeCard(cards_, where, replacement);
     }
 
     playerGems_[pid].inc(YELLOW);
@@ -238,16 +238,16 @@ MoveStatus Board::buyCardFromPile(Board::player_id_t pid, typename Cards::iterat
     playerGems_[pid] -= balance;
     playerPrestige_[pid].inc(where->color_);
     playerPoints_[pid] += where->points_;
-    removeTableCard(where, replacement);
+    removeCard(pile, where, replacement);
 
     return LEGAL_MOVE;
 }
 
 // Update pile and remainingCards_ after a table card has been purchased or reserved
-void Board::removeTableCard(typename Cards::iterator& where, const Card& replacement)
+void Board::removeCard(Cards& pile, typename Cards::iterator& where, const Card& replacement)
 {
     if (replacement == NULL_CARD) {
-        cards_.erase(where);
+        pile.erase(where);
     } else {
         *where = replacement;
         assert(remainingCards_[replacement.id_.type_] > 0);

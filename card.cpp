@@ -11,7 +11,7 @@ namespace grandeur {
 std::ostream&
 operator<<(std::ostream& os, const CardID& id)
 {
-    static constexpr const char* deckName[3] = {"L", "H", "M"};
+    static constexpr const char* deckName[3] = {"L", "M", "H"};
     os << deckName[id.type_] << "," << id.seq_;
     return os;
 }

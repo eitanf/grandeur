@@ -101,7 +101,7 @@ class Board {
     std::vector<points_t> playerPoints_;   // How many points each player has.
     std::vector<Cards> playerReserves_;  // Which visible cards each players has reserved
     unsigned remainingCards_[NDECKS];  // How many cards remain of each deck type.
-    void removeTableCard(typename Cards::iterator& where, const Card& replacement);
+    void removeCard(Cards& pile, typename Cards::iterator& where, const Card& replacement);
 };
 
 std::ostream& operator<<(const std::ostream&, const Board&);

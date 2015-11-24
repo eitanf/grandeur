@@ -60,7 +60,7 @@ class MidGameBoard : public ::testing::Test {
         TAKE(1, Gems({ 1, 1, 0, 1, 0 }));
         TAKE(2, Gems({ 0, 0, 1, 1, 1 }));
 
-        RESERVE(0, g_deck[7], NULL_CARD);
+        RESERVE(0, g_deck[7], NULL_CARD);  // Reserve from LOW deck
         BUY(1, g_deck[0], g_deck[12]);
         BUY(2, g_deck[3], g_deck[24]);
 
@@ -68,10 +68,10 @@ class MidGameBoard : public ::testing::Test {
         TAKE(1, Gems({ 1, 1, 0, 1, 0 }));
         TAKE(2, Gems({ 0, 1, 1, 1, 0 }));
 
-        RESERVE(0, g_deck[42], NULL_CARD);  // MEDIUM
+        RESERVE(0, g_deck[42], NULL_CARD);  // Reserve from MEDIUM table cards
         BUY(1, g_deck[24], g_deck[32]);
         TAKE(2, Gems({ 1, 1, 0, 1, 0 }));
-        RESERVE(0, g_deck[6], g_deck[5]);
+        RESERVE(0, g_deck[44], NULL_CARD); // Reserve from MEDIUM deck
         BUY(1, g_deck[32], g_deck[1]);
         BUY(2, g_deck[1], NULL_CARD);
     }
@@ -86,31 +86,31 @@ class MidGameBoard : public ::testing::Test {
 TEST_F(MidGameBoard, correctTableCards)
 {
     auto& tcards = board_.tableCards();
-    EXPECT_EQ(tcards.size(), initial_.size() - 1);
+    EXPECT_EQ(tcards.size(), initial_.size() - 2);
     EXPECT_EQ(deckCount(LOW, tcards), 3);
-    EXPECT_EQ(deckCount(MEDIUM, tcards), 4);
+    EXPECT_EQ(deckCount(MEDIUM, tcards), 3);
     EXPECT_EQ(deckCount(HIGH, tcards), 4);
 }
 
 TEST_F(MidGameBoard, correctReserves)
 {
     EXPECT_EQ(board_.playerReserves(0).size(), 1);
-    EXPECT_EQ(board_.playerReserves(0).at(0).id_, CardID({ LOW, 6 }));
+    EXPECT_EQ(board_.playerReserves(0).at(0).id_, CardID({ MEDIUM, 42 }));
     EXPECT_EQ(board_.playerReserves(1).size(), 0);
     EXPECT_EQ(board_.playerReserves(2).size(), 0);
 
     EXPECT_EQ(hidden_[0].size(), 1);
-    EXPECT_EQ(hidden_[0].at(0).id_, CardID({ MEDIUM, 43 }));
+    EXPECT_EQ(hidden_[0].at(0).id_, CardID({ MEDIUM, 44 }));
     EXPECT_EQ(hidden_[1].size(), 0);
-    EXPECT_EQ(hidden_[2].size(), 1);
+    EXPECT_EQ(hidden_[2].size(), 0);
 }
 
 TEST_F(MidGameBoard, correctGems)
 {
-    EXPECT_EQ(board_.tableGems(),   Gems({ 3, 5, 5, 3, 5, 3 }));
+    EXPECT_EQ(board_.tableGems(),   Gems({ 4, 5, 5, 3, 5, 3 }));
     EXPECT_EQ(board_.playerGems(0), Gems({ 1, 0, 0, 1, 0, 2 }));
     EXPECT_EQ(board_.playerGems(1), Gems({ 0, 0, 0, 0, 0, 0 }));
-    EXPECT_EQ(board_.playerGems(2), Gems({ 1, 0, 0, 1, 0, 0 }));
+    EXPECT_EQ(board_.playerGems(2), Gems({ 0, 0, 0, 1, 0, 0 }));
 }
 
 TEST_F(MidGameBoard, correctPrestige)
@@ -129,7 +129,9 @@ TEST_F(MidGameBoard, correctPoints)
 
 TEST_F(MidGameBoard, correctRemainingDecks)
 {
-    EXPECT_EQ(board_.remainingCards(LOW), deckCount(LOW, g_deck) - (4 + 7));
+    // We bought 4 LOW cards w/replacement, and reserved one w/replacment
+    EXPECT_EQ(board_.remainingCards(LOW), deckCount(LOW, g_deck) - (4 + 4 + 1));
+    // Reserved one MEDIUM card from the deck
     EXPECT_EQ(board_.remainingCards(MEDIUM), deckCount(MEDIUM, g_deck) - (4 + 1));
     EXPECT_EQ(board_.remainingCards(HIGH), deckCount(HIGH, g_deck) - 4);
 }
