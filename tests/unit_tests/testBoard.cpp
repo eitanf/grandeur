@@ -35,12 +35,9 @@ TEST(boardTests, ctor)
     EXPECT_EQ(board.remainingCards(HIGH), deckCount(HIGH, g_deck) - 4);
 }
 
-#define TAKE(p, gems) EXPECT_EQ(LEGAL_MOVE,                                 \
-        board_.makeMove(p, GameMove(gems), hidden_[p]))
-#define BUY(p, card, rep) EXPECT_EQ(LEGAL_MOVE,                              \
-        board_.makeMove(p, GameMove(card, MoveType::BUY_CARD), hidden_[p], rep))
-#define RESERVE(p, card, rep) EXPECT_EQ(LEGAL_MOVE,                          \
-        board_.makeMove(p, GameMove(card, MoveType::RESERVE_CARD), hidden_[p],  rep))
+#define TAKE(p, gems) EXPECT_EQ(LEGAL_MOVE, board_.takeGems(p, gems))
+#define BUY(p, card, rep) EXPECT_EQ(LEGAL_MOVE, board_.buyCard(p, card.id_, hidden_[p], rep))
+#define RESERVE(p, card, rep) EXPECT_EQ(LEGAL_MOVE, board_.reserveCard(p, card, hidden_[p],  rep))
 
 class MidGameBoard : public ::testing::Test {
   public:

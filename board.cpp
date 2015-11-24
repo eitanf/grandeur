@@ -22,10 +22,13 @@ Board::Board(unsigned nplayer, const Cards& initialCards)
     remainingCards_[HIGH] = deckCount(HIGH, g_deck) - deckCount(HIGH, cards_);
 }
 
-MoveStatus Board::takeGems(Board::player_id_t pid, const Gems& gems)
+MoveStatus
+Board::takeGems(player_id_t pid, const Gems& gems)
 {
-    // First, check for bad inputs:
+    // First, check for bugs or bad inputs:
     assert(pid < nplayer_);
+    assert(totalGameGems() == g_gem_allocation[nplayer_]);
+
     if (gems.getCount(YELLOW) > 0) {
         return TAKING_YELLOW;
     }
@@ -60,10 +63,12 @@ MoveStatus Board::takeGems(Board::player_id_t pid, const Gems& gems)
 // Removes noble if won.
 // Also removes card from visible cards or reserves, if found.
 // If in deck and replacment isn't NULL_CARD, adds replacement to cards_.
-MoveStatus Board::buyCard(player_id_t pid, CardID cid, Cards& hidden, const Card& replacement)
+MoveStatus
+Board::buyCard(player_id_t pid, CardID cid, Cards& hidden, const Card& replacement)
 {
     ///// First, check for bad programmatic inputs (bugs):
     assert(pid < nplayer_);
+    assert(totalGameGems() == g_gem_allocation[nplayer_]);
 
     // Ensure that any replacement card comes from non-empty deck:
     assert(replacement == NULL_CARD || remainingCards_[replacement.id_.type_] > 0);
@@ -117,11 +122,13 @@ MoveStatus Board::buyCard(player_id_t pid, CardID cid, Cards& hidden, const Card
 // Checks that the player hasn't exceed allowed reservations, and that
 // enough yellow coins exist.
 // If card not found board, add it to hidden.
-MoveStatus Board::reserveCard(Board::player_id_t pid, const Card& card,
-                              Cards& hidden, const Card& replacement)
+MoveStatus
+Board::reserveCard(player_id_t pid, const Card& card,
+                   Cards& hidden, const Card& replacement)
 {
     ///// First, check for bad programmatic inputs (bugs):
     assert(pid < nplayer_);
+    assert(totalGameGems() == g_gem_allocation[nplayer_]);
 
     // Ensure that any replacement card comes from non-empty deck
     assert(replacement == NULL_CARD || remainingCards_[replacement.id_.type_] > 0);
@@ -179,7 +186,8 @@ MoveStatus Board::reserveCard(Board::player_id_t pid, const Card& card,
 }
 
 
-const Cards& Board::tableCards() const
+const Cards&
+Board::tableCards() const
 {
     assert(!cards_.empty());
     assert(cards_.size() <= INITIAL_DECK_CARDS_NUMBER * NDECKS);
@@ -187,14 +195,16 @@ const Cards& Board::tableCards() const
 }
 
 
-const Cards& Board::playerReserves(Board::player_id_t pid) const
+const Cards&
+Board::playerReserves(player_id_t pid) const
 {
     assert(playerReserves_.at(pid).size() <= MAX_PLAYER_RESERVES);
     return playerReserves_.at(pid);
 }
 
 
-const Gems& Board::tableGems() const
+const Gems&
+Board::tableGems() const
 {
     assert(!tableGems_.hasNegatives()); // Not too little gems
     assert(!((g_gem_allocation[nplayer_] - tableGems_).hasNegatives())); // And not too many
@@ -202,7 +212,8 @@ const Gems& Board::tableGems() const
 }
 
 
-const Gems& Board::playerGems(Board::player_id_t pid) const
+const Gems&
+Board::playerGems(player_id_t pid) const
 {
     assert(!playerGems_[pid].hasNegatives()); // Not too little gems
     assert(!((g_gem_allocation[nplayer_] - playerGems_.at(pid)).hasNegatives())); // And not too many
@@ -210,7 +221,8 @@ const Gems& Board::playerGems(Board::player_id_t pid) const
 }
 
 
-unsigned Board::remainingCards(unsigned deck) const
+unsigned
+Board::remainingCards(unsigned deck) const
 {
     assert(deck < NDECKS);
     return remainingCards_[deck];
@@ -219,8 +231,9 @@ unsigned Board::remainingCards(unsigned deck) const
 
 // buyCardsFromPile does the actual bookkeeping, once we've identified where we're buying
 // the card from (table cards, reserves, etc.). We still have to check for adequate gems.
-MoveStatus Board::buyCardFromPile(Board::player_id_t pid, typename Cards::iterator where,
-                                  Cards& pile, const Card& replacement)
+MoveStatus
+Board::buyCardFromPile(player_id_t pid, typename Cards::iterator where,
+                       Cards& pile, const Card& replacement)
 {
     assert(where->cost_.getCount(YELLOW) == 0);
     assert(pid < nplayer_);
@@ -244,7 +257,8 @@ MoveStatus Board::buyCardFromPile(Board::player_id_t pid, typename Cards::iterat
 }
 
 // Update pile and remainingCards_ after a table card has been purchased or reserved
-void Board::removeCard(Cards& pile, typename Cards::iterator& where, const Card& replacement)
+void
+Board::removeCard(Cards& pile, typename Cards::iterator& where, const Card& replacement)
 {
     if (replacement == NULL_CARD) {
         pile.erase(where);
@@ -256,32 +270,8 @@ void Board::removeCard(Cards& pile, typename Cards::iterator& where, const Card&
 }
 
 
-MoveStatus Board::makeMove(Board::player_id_t pid, GameMove mymove, Cards& myhidden,
-                   Card replacement)
-{
-    assert(totalGameGems() == g_gem_allocation[nplayer_]);
-    MoveStatus status;
-
-    switch (mymove.type_) {
-    case MoveType::TAKE_GEMS:
-        status = takeGems(pid, mymove.payload_.gems_);
-        break;
-
-    case MoveType::BUY_CARD:
-        status = buyCard(pid, mymove.payload_.card_.id_, myhidden, replacement);
-        break;
-
-    case MoveType::RESERVE_CARD:
-        status = reserveCard(pid, mymove.payload_.card_, myhidden, replacement);
-        break;
-    }
-
-    assert(totalGameGems() == g_gem_allocation[nplayer_]);
-    return status;
-}
-
-
-Gems Board::totalGameGems() const
+const Gems
+Board::totalGameGems() const
 {
     Gems ret = tableGems();
     for (unsigned i = 0; i < nplayer_; ++i) {
@@ -291,7 +281,8 @@ Gems Board::totalGameGems() const
 }
 
 
-std::ostream& operator<<(std::ostream& os, const Board& board)
+std::ostream&
+operator<<(std::ostream& os, const Board& board)
 {
     assert(false);
     return os;

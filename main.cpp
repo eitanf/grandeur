@@ -5,10 +5,10 @@
  * This file includes all the code to set up a new game. The actual game loop
  * and mechanics are in game_rules.cpp.
  *
- * (C) 2015 Eitan Frachtenberg. MIT License.
+ * (C) 2015 Eitan Frachtenberg. GPLv2 License.
  */
 
-#include "mechanics.h"
+#include "move.h"
 
 namespace grandeur {
 
