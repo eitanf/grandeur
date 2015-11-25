@@ -21,6 +21,9 @@ static constexpr auto DIFFERENT_COLOR_GEMS = 3;
 // How many gems can one take of a single color
 static constexpr auto SAME_COLOR_GEMS = 2;
 
+// How many table gems of a single color must we have to take SAME_COLOR_GEMS:
+static constexpr auto MIN_SAME_COLOR_TABLE_GEMS = SAME_COLOR_GEMS + 2;
+
 // We have three types of decks, based on their typical prestige point value
 static constexpr unsigned NDECKS = 3;
 

@@ -63,6 +63,15 @@ TEST(gemsTest, actualCost)
     EXPECT_EQ(gems.actualCost(Gems({5, -5, -5, -5})), Gems({1, 0, 0, 0, 0, 4}));
 }
 
+TEST(gemsTest, negativeDiscountDoesntAffectActualCost)
+{
+    Gems gems(0, 2, 0, 0, 0, 3);
+
+    EXPECT_EQ(gems.actualCost(Gems({3, 2, 1, 0, 0, 0})), Gems({0, 2, 0, 0, 0, 4}));
+    EXPECT_EQ(gems.actualCost(Gems({3, 2, 1, -1, -1, 0})), Gems({0, 2, 0, 0, 0, 4}));
+}
+
+
 class shortGems : public ::testing::Test {
   public:
     shortGems() : data_(1, 2, 3, -4) {} // Note: no BLACK or YELLOW)

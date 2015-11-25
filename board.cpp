@@ -29,27 +29,40 @@ Board::takeGems(player_id_t pid, const Gems& gems)
     assert(pid < nplayer_);
     assert(totalGameGems() == g_gem_allocation[nplayer_]);
 
+    // Can't take yellows:
     if (gems.getCount(YELLOW) > 0) {
         return TAKING_YELLOW;
     }
+
+    // Can't take more than the table has:
     if ((tableGems_ - gems).hasNegatives()) {
         return INSUFFICIENT_TABLE_GEMS;
     }
-    if ((gems + playerGems_[pid]).totalGems() > MAX_PLAYER_GEMS) {
-        return TOO_MANY_GEMS;
+
+    // If taking single color, must ensure right amount and sufficient table gems:
+    if (gems.totalColors() == 1) {
+        for (size_t i = 0; i < Gems::NCOLOR; ++i) {
+            const auto count = gems.getCount(gem_color_t(i));
+            if (count != 0 && count != SAME_COLOR_GEMS) {
+                return WRONG_NUMBER_OF_GEMS;
+            }
+            if (count != 0 && tableGems_.getCount(gem_color_t(i)) < MIN_SAME_COLOR_TABLE_GEMS) {
+                return INSUFFICIENT_TABLE_GEMS;
+            }
+        }
     }
-    if (gems.totalColors() != 1 && gems.totalColors() != DIFFERENT_COLOR_GEMS) {
+    else if (gems.totalColors() != DIFFERENT_COLOR_GEMS || gems.maxQuantity() != 1) {
         return WRONG_NUMBER_OF_GEMS;
     }
-    if (gems.totalColors() == 1 && gems.maxQuantity() != SAME_COLOR_GEMS) {
-        return WRONG_NUMBER_OF_GEMS;
-    }
-    if (gems.totalColors() == DIFFERENT_COLOR_GEMS && gems.maxQuantity() != 1) {
-        return WRONG_NUMBER_OF_GEMS;
-    }
+
     if ((gems + playerGems_[pid]).hasNegatives()) {
         assert(!playerGems_[pid].hasNegatives());
         return INSUFFICIENT_GEMS_TO_RETURN;
+    }
+
+    // Player can't own too many gems:
+    if ((gems + playerGems_[pid]).totalGems() > MAX_PLAYER_GEMS) {
+        return TOO_MANY_GEMS;
     }
 
     // Phew, everything seems in order. Let's take those gems!
@@ -80,10 +93,7 @@ Board::buyCard(player_id_t pid, CardID cid, Cards& hidden, const Card& replaceme
     assert((!cardIn(cid, hidden) && !cardIn(cid, playerReserves_[pid])) ||
            (replacement == NULL_CARD));
 
-    // Ensure card hasn't been purchased before:
-    assert(!cardIn(cid, purchased_));
-
-    // Ensure replacment is legitimate (not previously seen):
+    // Ensure replacement is legitimate (not previously seen):
     assert(replacement.id_.seq_ != CardID::WILDCARD);
     assert(!cardIn(replacement.id_, cards_));
     assert(!cardIn(replacement.id_, purchased_));
@@ -93,8 +103,13 @@ Board::buyCard(player_id_t pid, CardID cid, Cards& hidden, const Card& replaceme
     }
 
     ///// Next, check for bad user inputs:
-    if (cid.type_ == CardID::WILDCARD) {
+    if (cid.seq_ == CardID::WILDCARD) {
         return BUY_WILDCARD;
+    }
+
+    // Ensure card hasn't been purchased before:
+    if(cardIn(cid, purchased_)) {
+        return UNAVAILABLE_CARD;
     }
 
     //// Proceed to find the card to buy, check it's good, and if so, buy it:
@@ -133,16 +148,6 @@ Board::reserveCard(player_id_t pid, const Card& card,
     // Ensure that any replacement card comes from non-empty deck
     assert(replacement == NULL_CARD || remainingCards_[replacement.id_.type_] > 0);
 
-    // Ensure that replacement is only needed for table cards:
-    assert(replacement == NULL_CARD || cardIn(card.id_, cards_));
-
-    // Ensure card hasn't been purchased or reserved before:
-    assert(!cardIn(card.id_, purchased_));
-    assert(!cardIn(card.id_, hidden));
-    for (size_t i = 0; i < nplayer_; ++i) {
-        assert(!cardIn(card.id_, playerReserves_[i]));
-    }
-
     // Ensure replacment is legitimate (not previously seen):
     assert(replacement.id_.seq_ != CardID::WILDCARD);
     assert(!cardIn(replacement.id_, cards_));
@@ -153,19 +158,38 @@ Board::reserveCard(player_id_t pid, const Card& card,
     }
 
     ///// Next, check for bad user inputs:
+    // Can't reserve too many cards:
     if (hidden.size() + playerReserves_[pid].size() >= MAX_PLAYER_RESERVES) {
         return TOO_MANY_RESERVES;
     }
 
+    // Can't exceed player gem count:
     if (playerGems_[pid].totalGems() >= MAX_PLAYER_GEMS) {
         assert(playerGems_[pid].totalGems() == MAX_PLAYER_GEMS);
         return TOO_MANY_GEMS;
     }
 
+    // Can't exceed table YELLOW count:
     if (tableGems_.getCount(YELLOW) <= 0) {
         assert(tableGems_.getCount(YELLOW) == 0);
         return INSUFFICIENT_TABLE_GEMS;
     }
+
+    // Ensure card hasn't been purchased or reserved before:
+    if (cardIn(card.id_, purchased_) || cardIn(card.id_, hidden)) {
+        return UNAVAILABLE_CARD;
+    }
+    for (size_t i = 0; i < nplayer_; ++i) {
+        if (cardIn(card.id_, playerReserves_[i])) {
+            return UNAVAILABLE_CARD;
+        }
+    }
+
+    // Ensure that replacement is only needed for table cards:
+    if (!(replacement == NULL_CARD || cardIn(card.id_, cards_))) {
+        return UNAVAILABLE_CARD;
+    }
+
 
     //// Proceed to find the card in table cards or not (undealt deck):
     auto where = cardLocation(card.id_, cards_);
@@ -189,7 +213,6 @@ Board::reserveCard(player_id_t pid, const Card& card,
 const Cards&
 Board::tableCards() const
 {
-    assert(!cards_.empty());
     assert(cards_.size() <= INITIAL_DECK_CARDS_NUMBER * NDECKS);
     return cards_;
 }
@@ -241,7 +264,7 @@ Board::buyCardFromPile(player_id_t pid, typename Cards::iterator where,
     // Compute how many gems we'll have left after the purchase, complement from yellows
     // as necessary.
     auto balance = playerGems_[pid].actualCost(where->cost_ - playerPrestige(pid));
-    if (balance.hasNegatives()) {
+    if ((playerGems_[pid] - balance).hasNegatives()) {
         return INSUFFICIENT_GEMS;
     }
 

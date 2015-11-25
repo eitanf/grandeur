@@ -21,7 +21,7 @@ enum MoveStatus {
     INSUFFICIENT_GEMS_TO_RETURN, // Trying to returns gems you don't have
     BUY_WILDCARD,   // Trying to buy a non-specific card
     INSUFFICIENT_GEMS,  // Trying to buy a card without enough gems
-    UNAVAILABLE_CARD,   // Attempt to buy a card not avalabile to this player
+    UNAVAILABLE_CARD,   // Attempt to buy a card not available to this player
     TOO_MANY_RESERVES  // Attempt to reserve a card beyond the 3 allowed.
 };
 

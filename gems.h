@@ -66,8 +66,8 @@ class Gems {
     bool operator==(const Gems& rhs) const { return gems_ == rhs.gems_; }
     bool operator!=(const Gems& rhs) const { return !(*this == rhs); }
 
-  private:
     static constexpr unsigned NCOLOR = 6;
+  private:
     std::array<gem_count_t, NCOLOR> gems_;
 };
 
