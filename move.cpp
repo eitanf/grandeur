@@ -12,9 +12,9 @@ namespace grandeur {
 
 
 MoveStatus
-isLegalMove(Board board, const Cards& hidden, int player, GameMove mymove)
+isLegalMove(Board board, player_id_t pid, const GameMove& move, Cards hidden)
 {
-    return makeMove(board, pid, mymove, myhidden);
+    return makeMove(board, pid, move, hidden);
 }
 
 /*
@@ -35,8 +35,9 @@ legalMoves(const Cards& tableCards, const Cards& myCards,
 
  */
 
-MoveStatus makeMove(Board& board, player_id_t pid, const GameMove& mymove,
-                    Cards& myhidden, const Card& replacement)
+MoveStatus
+makeMove(Board& board, player_id_t pid, const GameMove& mymove,
+         Cards& myhidden, const Card& replacement)
 {
     MoveStatus status;
 

@@ -5,7 +5,9 @@
 
 #pragma once
 
+#include "card.h"
 #include "constants.h"
+#include "gems.h"
 
 namespace grandeur {
 
@@ -49,12 +51,12 @@ class Board;
 // Returns an error code if the move could not be carried out, LEGAL_MOVE otherwise.
 // Receives my (move maker) player id, the actual move, my hidden reserves, and
 // possibly a card to replace any other card purchased or reserved from the table ones.
-MoveStatus makeMove(Board& board, player_id_t pid, GameMove mymove,
-                    Cards& myhidden, Card replacement = NULL_CARD);
+MoveStatus makeMove(Board& board, player_id_t pid, const GameMove& mymove,
+                    Cards& myhidden, const Card& replacement = NULL_CARD);
 
 
 // Attempt to perform move on a copy of board, and check its legality.
-MoveStatus isLegalMove(Board board, player_id_t pid, const GameMove& mymove, Cards myhidden);
+MoveStatus isLegalMove(Board, player_id_t, const GameMove&, Cards myhidden);
 
 /*
 
