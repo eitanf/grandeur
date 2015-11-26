@@ -11,8 +11,8 @@ using namespace std;
 
 namespace grandeur {
 
-Board::Board(unsigned nplayer, const Cards& initialCards)
-  : nplayer_(nplayer), cards_(initialCards), purchased_(),
+Board::Board(unsigned nplayer, const Cards& initialCards, const Nobles& initialNobles)
+  : nplayer_(nplayer), cards_(initialCards), nobles_(initialNobles), purchased_(),
     tableGems_(g_gem_allocation[nplayer]), playerGems_(nplayer),
     playerPrestige_(nplayer), playerReserves_(nplayer), playerPoints_(nplayer),
     remainingCards_()
@@ -263,7 +263,7 @@ Board::buyCardFromPile(player_id_t pid, typename Cards::iterator where,
 
     // Compute how many gems we'll have left after the purchase, complement from yellows
     // as necessary.
-    auto balance = playerGems_[pid].actualCost(where->cost_ - playerPrestige(pid));
+    auto balance = playerGems_[pid].actualCost(where->cost_ - playerPrestige_[pid]);
     if ((playerGems_[pid] - balance).hasNegatives()) {
         return INSUFFICIENT_GEMS;
     }
@@ -274,7 +274,9 @@ Board::buyCardFromPile(player_id_t pid, typename Cards::iterator where,
     playerGems_[pid] -= balance;
     playerPrestige_[pid].inc(where->color_);
     playerPoints_[pid] += where->points_;
+
     removeCard(pile, where, replacement);
+    checkNobles(pid);
 
     return LEGAL_MOVE;
 }
@@ -293,6 +295,21 @@ Board::removeCard(Cards& pile, typename Cards::iterator& where, const Card& repl
 }
 
 
+void Board::checkNobles(player_id_t pid)
+{
+    for (auto iter = nobles_.begin(); iter != nobles_.end(); ) {
+        if (!(playerPrestige_[pid] - iter->cost_).hasNegatives()) {
+            playerPoints_[pid] += iter->points_;
+            iter = nobles_.erase(iter);
+        } else {
+            ++iter;
+        }
+
+    }
+
+}
+
+// Sum up all the gems of all players + table. Should be constant.
 const Gems
 Board::totalGameGems() const
 {
@@ -304,12 +321,34 @@ Board::totalGameGems() const
 }
 
 
-std::ostream&
-operator<<(std::ostream& os, const Board& board)
+std::ostream& operator<<(std::ostream& os, const Board& board)
 {
-    assert(false);
+    os << "Available gems: " << board.tableGems() << "\n";
+
+    os << "Available cards:\n";
+    for (auto& c : board.tableCards()) {
+        os << c << "\n";
+    }
+
+    os << "Available nobles:\n";
+    for (auto& n : board.tableNobles()) {
+        os << n << "\n";
+    }
+
+    os << "Remaining cards: ";
+    os << "Low: " << board.remainingCards(LOW) << "   ";
+    os << "Medium: " << board.remainingCards(MEDIUM) << "   ";
+    os << "High: " << board.remainingCards(HIGH) << "\n";
+
+    os << "Player stats:\n";
+    for (player_id_t p = 0; p < board.playersNum(); ++p) {
+        os << "Player " << p << ": ";
+        os << "points: " << board.playerPoints(p) << "   ";
+        os << "prestige: " << board.playerPrestige(p) << "   ";
+        os << "gems: " << board.playerGems(p) << "\n";
+    }
+
     return os;
 }
-
 
 } // namespace

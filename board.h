@@ -11,6 +11,7 @@
 #include "constants.h"
 #include "gems.h"
 #include "move.h"
+#include "noble.h"
 
 #include <cassert>
 #include <iosfwd>
@@ -20,8 +21,10 @@ namespace grandeur {
 
 class Board {
   public:
+    using Nobles = std::vector<Noble>;
+
     // Construct Board with the available no. of cards from each deck.
-    Board(unsigned nplayer, const Cards& initialCards/*, const Nobles& initialNobles*/);
+    Board(unsigned nplayer, const Cards& initialCards, const Nobles& initialNobles);
     Board(const Board&) = default;
     Board(Board&&) = default;
     Board& operator=(const Board&) = default;
@@ -42,6 +45,8 @@ class Board {
 
     //////////// Accessor functions:
 
+    const player_id_t playersNum() const { return nplayer_; }
+
     const Cards& tableCards() const;
     const Cards& playerReserves(player_id_t pid) const;
 
@@ -54,14 +59,16 @@ class Board {
 
     unsigned remainingCards(unsigned deck) const;
 
-    friend std::ostream& operator<<(const std::ostream&, const Board&);
+    const Nobles& tableNobles() const { return nobles_; }
+
 
   private:
-
-
     // Like buyCard, but for a card in a specific set of cards:
     MoveStatus buyCardFromPile(player_id_t pid, typename Cards::iterator where, Cards& pile,
                                const Card& replacement);
+
+    // Remove a card from a pile of cards, possibly with replacement:
+    void removeCard(Cards& pile, typename Cards::iterator& where, const Card& replacement);
 
     // For debugging purposes:
     const Gems totalGameGems() const;
@@ -69,15 +76,17 @@ class Board {
     int nplayer_;  // Total no. of players
     Cards cards_;  // Visible cards
     Cards purchased_; // A record of past purchased card for sanity checking
+    Nobles nobles_;    // A collection of available noble tiles
     Gems tableGems_;  // Community gems
     std::vector<Gems> playerGems_;   // The current resource count of each player
     std::vector<Gems> playerPrestige_;   // The permanent resource discount of each player
     std::vector<points_t> playerPoints_;   // How many points each player has.
     std::vector<Cards> playerReserves_;  // Which visible cards each players has reserved
     unsigned remainingCards_[NDECKS];  // How many cards remain of each deck type.
-    void removeCard(Cards& pile, typename Cards::iterator& where, const Card& replacement);
+
+    void checkNobles(player_id_t pid);
 };
 
-std::ostream& operator<<(const std::ostream&, const Board&);
+std::ostream& operator<<(std::ostream& os, const Board& board);
 
 } // namespace

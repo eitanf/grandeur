@@ -14,7 +14,7 @@ TEST(boardTests, ctor)
     Cards cards({ g_deck[0], g_deck[1], g_deck[2], g_deck[3],
                   g_deck[40], g_deck[41], g_deck[42], g_deck[43],
                   g_deck[70], g_deck[71], g_deck[72], g_deck[73] });
-    Board board(2, cards);
+    Board board(2, cards, { g_nobles[5], g_nobles[6], g_nobles[7], g_nobles[8] });
 
     EXPECT_EQ(board.tableCards(), cards);
 
@@ -45,6 +45,7 @@ class MidGameBoard : public ::testing::Test {
 
     static constexpr unsigned nplayer_ = 3;
     Cards initial_;
+    Board::Nobles nobles_;
     Board board_;
     Cards hidden_[nplayer_];
 };
@@ -52,7 +53,8 @@ class MidGameBoard : public ::testing::Test {
 MidGameBoard::MidGameBoard() : initial_({g_deck[0], g_deck[3], g_deck[4], g_deck[6],
                                          g_deck[40], g_deck[41], g_deck[42], g_deck[43],
                                          g_deck[70], g_deck[71], g_deck[72], g_deck[73] }),
-                               board_(nplayer_, initial_),
+                               nobles_({ g_nobles[5], g_nobles[6], g_nobles[7], g_nobles[8] }),
+                               board_(nplayer_, initial_, nobles_),
                                hidden_()
 {
     // Make some game moves (6 rounds):
@@ -281,4 +283,41 @@ TEST_F(MidGameBoard, cardExhaustion)
     BUY(0, g_deck[6], NULL_CARD);
     ASSERT_EQ(board_.reserveCard(0, g_deck[19], hidden_[1], g_deck[20]), UNAVAILABLE_CARD);
     ASSERT_EQ(board_.buyCard(0, g_deck[19].id_, hidden_[1], NULL_CARD), UNAVAILABLE_CARD);
+}
+
+// Test that acquiring a noble updates points correctly.
+TEST_F(MidGameBoard, nobleAcquisition)
+{
+    ASSERT_EQ(board_.tableNobles().size(), nobles_.size());
+    ASSERT_EQ(board_.playerPoints(2), 0);
+    ASSERT_EQ(board_.playerPrestige(2).getCount(BLACK), 2);
+
+    // Acquire two more blacks:
+    TAKE(2, Gems({ 0, 0, 2 }));
+    TAKE(2, Gems({ 1, 0, 1, 1 }));
+    BUY(2, g_deck[6], g_deck[19]);
+    TAKE(2, Gems({ 0, 0, 2 }));
+    BUY(2, g_deck[4], g_deck[20]);
+
+    // Acquire four teals:
+    BUY(2, g_deck[12], g_deck[13]);
+    TAKE(2, Gems({ 0, 0, 2 }));
+    BUY(2, g_deck[13], g_deck[14]);
+    BUY(2, g_deck[14], g_deck[11]);
+    TAKE(2, Gems({ 0, 0, 2 }));
+    TAKE(2, Gems({ 1, 1, 1 }));
+    BUY(2, g_deck[11], g_deck[21]);
+
+    // Acquire four whites:
+    BUY(2, g_deck[21], g_deck[23]);
+    TAKE(2, Gems({ 1, 0, 1, 1, 0 }));
+    BUY(2, g_deck[19], NULL_CARD);
+    TAKE(2, Gems({ 0, 0, 2 }));
+    TAKE(2, Gems({ 1, 0, 1, 1, 0 }));
+    BUY(2, g_deck[23], NULL_CARD);
+    BUY(2, g_deck[20], NULL_CARD);
+
+
+    EXPECT_EQ(board_.playerPoints(2), 7);  // Points from getting the nobles 5 and 8
+    ASSERT_EQ(board_.tableNobles().size(), nobles_.size() - 2);
 }
