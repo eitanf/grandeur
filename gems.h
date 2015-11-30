@@ -11,6 +11,7 @@
 #include "constants.h"
 
 #include <array>
+#include <iterator>
 #include <iosfwd>
 
 namespace grandeur {
@@ -27,6 +28,10 @@ class Gems {
     // Catch-all constructor for gems
     template <typename... T>
     constexpr Gems(T... args) : gems_{static_cast<gem_count_t>(args)...} {}
+
+    // Copy a range of gems (for iterator type only, not for a pair of args as above):
+    template <typename Iter>
+    Gems(Iter begin, Iter end, typename std::iterator_traits<Iter>::iterator_category* = nullptr);
 
     // Increment/decrement gem count for one color:
     int inc(gem_color_t color) { return ++gems_[color]; }
@@ -70,6 +75,17 @@ class Gems {
   private:
     std::array<gem_count_t, NCOLOR> gems_;
 };
+
+template <typename Iter>
+Gems::Gems(Iter begin, Iter end, typename std::iterator_traits<Iter>::iterator_category*)
+  : gems_({ 0, 0, 0, 0, 0, 0 })
+{
+    size_t i = 0;
+    for (auto iter = begin; iter != end; ++iter) {
+        gems_.at(i++) = *iter;
+    }
+}
+
 
 // A mapping from the no. of players (2--4) to the initial table gem allocation:
 static constexpr const Gems g_gem_allocation[] = {
