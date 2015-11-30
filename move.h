@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <iosfwd>
+
 #include "card.h"
 #include "constants.h"
 #include "gems.h"
@@ -43,6 +45,8 @@ struct GameMove {
     } payload_;
 };
 
+std::ostream& operator<<(std::ostream&, const GameMove&);
+
 using player_id_t = unsigned;
 
 class Board;
@@ -58,18 +62,13 @@ MoveStatus makeMove(Board& board, player_id_t pid, const GameMove& mymove,
 // Attempt to perform move on a copy of board, and check its legality.
 MoveStatus isLegalMove(Board, player_id_t, const GameMove&, Cards myhidden);
 
-/*
-
-
 // legalMoves enumerates (almost) all possible legal moves for a given player.
 // The function all of the board elements this player can see.
 // The only legal move that this function will not identify is one where
 // a player takes an excess over MAX_GEMS and then returns some. This move is
 // however identified as legal by isLegalMove().
 std::vector<GameMove>
-legalMoves(const VisibleBoard& board, int player);
-
-*/
+legalMoves(const Board& board, player_id_t pid, const Cards& myHidden);
 
 // mainGaimLoop is the run an entire new game.
 void mainGameLoop();

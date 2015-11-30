@@ -78,4 +78,4 @@ std::ostream& operator<<(std::ostream& os, const Gems& gems)
     return os;
 }
 
-}
+} // namespace

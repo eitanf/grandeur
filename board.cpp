@@ -345,7 +345,12 @@ std::ostream& operator<<(std::ostream& os, const Board& board)
         os << "Player " << p << ": ";
         os << "points: " << board.playerPoints(p) << "   ";
         os << "prestige: " << board.playerPrestige(p) << "   ";
-        os << "gems: " << board.playerGems(p) << "\n";
+        os << "gems: " << board.playerGems(p) << "   ";
+        os << "reserved (visible):";
+        for (auto const& c : board.playerReserves(p)) {
+            os << "  " << c.id_;
+        }
+        os << "\n";
     }
 
     return os;

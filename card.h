@@ -91,6 +91,12 @@ bool cardIn(CardID cid, const Container& cards) {
 // Define an "empty" card:
 static constexpr Card NULL_CARD = { { LOW, CardID::NULLCARD }, { }, YELLOW, 0 };
 
+// Define Wildcards, one per decC:
+static constexpr Card LOW_CARD = { { LOW, CardID::WILDCARD }, { }, YELLOW, 0 };
+static constexpr Card MEDIUM_CARD = { { MEDIUM, CardID::WILDCARD }, { }, YELLOW, 0 };
+static constexpr Card HIGH_CARD = { { HIGH, CardID::WILDCARD }, { }, YELLOW, 0 };
+
+
 // Global constant card list for the full set of game cards.
 static constexpr const Card g_deck[] = {
         { { LOW, 0 }, { 1, 1, 1, 1, 0 }, BLACK, 0 },

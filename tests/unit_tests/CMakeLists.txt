@@ -8,6 +8,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 add_executable(runGrandeurTests
         testGems.cpp ${grandeur_SOURCE_DIR}/gems.cpp
         testCards.cpp ${grandeur_SOURCE_DIR}/card.cpp
-        testBoard.cpp ${grandeur_SOURCE_DIR}/board.cpp ${grandeur_SOURCE_DIR}/noble.cpp)
+        testBoard.cpp ${grandeur_SOURCE_DIR}/board.cpp ${grandeur_SOURCE_DIR}/noble.cpp ${grandeur_SOURCE_DIR}/move.cpp)
 
 target_link_libraries(runGrandeurTests gtest gtest_main)

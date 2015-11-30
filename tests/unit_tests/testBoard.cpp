@@ -4,10 +4,46 @@
 //
 
 
+#include <algorithm>
+#include <vector>
+
 #include "gtest/gtest.h"
+
 #include "board.h"
+#include "move.h"
 
 using namespace grandeur;
+using namespace std;
+
+// Utility functions:
+// Count the no. of moves of each type in a collection of moves:
+unsigned take2MovesNum(const vector<GameMove>& moves)
+{
+    return count_if(moves.cbegin(), moves.cend(), [](const GameMove& mv) {
+        return (mv.type_ == MoveType::TAKE_GEMS
+                && mv.payload_.gems_.totalColors() == 1)? 1 : 0;
+    });
+}
+unsigned take3MovesNum(const vector<GameMove>& moves)
+{
+    return count_if(moves.cbegin(), moves.cend(), [](const GameMove& mv) {
+        return (mv.type_ == MoveType::TAKE_GEMS
+                && mv.payload_.gems_.totalColors() == 3)? 1 : 0;
+    });
+}
+unsigned buyMovesNum(const vector<GameMove>& moves)
+{
+    return count_if(moves.cbegin(), moves.cend(), [](const GameMove& mv) {
+        return (mv.type_ == MoveType::BUY_CARD)? 1 : 0;
+    });
+}
+unsigned reserveMovesNum(const vector<GameMove>& moves)
+{
+    return count_if(moves.cbegin(), moves.cend(), [](const GameMove& mv) {
+        return (mv.type_ == MoveType::RESERVE_CARD)? 1 : 0;
+    });
+}
+
 
 TEST(boardTests, ctor)
 {
@@ -74,7 +110,7 @@ MidGameBoard::MidGameBoard() : initial_({g_deck[0], g_deck[3], g_deck[4], g_deck
     TAKE(1, Gems({ 1, 1, 0, 1, 0 }));
     TAKE(2, Gems({ 0, 1, 1, 1, 0 }));
 
-    RESERVE(0, g_deck[42], NULL_CARD);  // Reserve from MEDIUM table cards
+    RESERVE(0, g_deck[42], NULL_CARD);  // Reserve from MEDIUM table cards, no replacement
     BUY(1, g_deck[24], g_deck[32]);
     TAKE(2, Gems({ 1, 1, 0, 1, 0 }));
     RESERVE(0, g_deck[44], NULL_CARD); // Reserve from MEDIUM deck
@@ -140,6 +176,39 @@ TEST_F(MidGameBoard, correctRemainingDecks)
     // Reserved one MEDIUM card from the deck
     EXPECT_EQ(board_.remainingCards(MEDIUM), deckCount(MEDIUM, g_deck) - (4 + 1));
     EXPECT_EQ(board_.remainingCards(HIGH), deckCount(HIGH, g_deck) - 4);
+}
+
+
+// Check that all (and only) the legal moves show up with legalMoves()
+TEST_F(MidGameBoard, legalMoves)
+{
+  // Make things a bit more interesting first:
+  TAKE(1, Gems({ 2 }));
+  TAKE(1, Gems({ 0, 2 }));
+  TAKE(1, Gems({ 1, 1, 1 }));
+  TAKE(1, Gems({ 1, 1, 1 }));
+  RESERVE(0, g_deck[8], NULL_CARD);
+  RESERVE(2, g_deck[12], g_deck[14]);
+
+  const auto p0moves = legalMoves(board_, 0, hidden_[0]);
+  const auto p1moves = legalMoves(board_, 1, hidden_[1]);
+  const auto p2moves = legalMoves(board_, 2, hidden_[2]);
+
+  EXPECT_EQ(take2MovesNum(p0moves), 1);
+  EXPECT_EQ(take2MovesNum(p1moves), 0);
+  EXPECT_EQ(take2MovesNum(p2moves), 1);
+
+  EXPECT_EQ(take3MovesNum(p0moves), 4);
+  EXPECT_EQ(take3MovesNum(p1moves), 0);
+  EXPECT_EQ(take3MovesNum(p2moves), 4);
+
+  EXPECT_EQ(buyMovesNum(p0moves), 4);
+  EXPECT_EQ(buyMovesNum(p1moves), 3);
+  EXPECT_EQ(buyMovesNum(p2moves), 2);
+
+  EXPECT_EQ(reserveMovesNum(p0moves), 0);  // Too many reserves
+  EXPECT_EQ(reserveMovesNum(p1moves), 0);  // Too many gems
+  EXPECT_EQ(reserveMovesNum(p2moves), 13);
 }
 
 
