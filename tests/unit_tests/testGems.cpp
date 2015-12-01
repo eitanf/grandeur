@@ -94,7 +94,7 @@ TEST_F(shortGems, countTotalGems)
 }
 
 TEST_F(shortGems, countColors) {
-    EXPECT_EQ(data_.totalColors(), 4);
+    EXPECT_EQ(data_.positiveColors(), 3);
 }
 
 TEST_F(shortGems, detectNegative)
@@ -105,5 +105,5 @@ TEST_F(shortGems, detectNegative)
 }
 
 TEST_F(shortGems, verifyMaxQuantity) {
-    ASSERT_EQ(data_.maxQuantity(), 3);
+    ASSERT_EQ(data_.getCount(data_.maxColor()), 3);
 }

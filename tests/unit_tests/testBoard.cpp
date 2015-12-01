@@ -21,14 +21,14 @@ unsigned take2MovesNum(const vector<GameMove>& moves)
 {
     return count_if(moves.cbegin(), moves.cend(), [](const GameMove& mv) {
         return (mv.type_ == MoveType::TAKE_GEMS
-                && mv.payload_.gems_.totalColors() == 1)? 1 : 0;
+                && mv.payload_.gems_.positiveColors() == 1) ? 1 : 0;
     });
 }
 unsigned take3MovesNum(const vector<GameMove>& moves)
 {
     return count_if(moves.cbegin(), moves.cend(), [](const GameMove& mv) {
         return (mv.type_ == MoveType::TAKE_GEMS
-                && mv.payload_.gems_.totalColors() == 3)? 1 : 0;
+                && mv.payload_.gems_.positiveColors() == 3) ? 1 : 0;
     });
 }
 unsigned buyMovesNum(const vector<GameMove>& moves)
@@ -116,7 +116,7 @@ MidGameBoard::MidGameBoard() : initial_({g_deck[0], g_deck[3], g_deck[4], g_deck
     RESERVE(0, g_deck[44], NULL_CARD); // Reserve from MEDIUM deck
     BUY(1, g_deck[32], g_deck[1]);
     BUY(2, g_deck[1], NULL_CARD);
-}
+ }
 
 
 // Verify that all accessors return the expected values
@@ -226,20 +226,58 @@ TEST_F(MidGameBoard, testTakeGems)
 
     TAKE(0, Gems({ 0, 0, 1, 1, 0, -1 }));  // Now 10
     EXPECT_EQ(board_.takeGems(0, Gems({ 0, 0, 1, 1, 0, -1 })), TOO_MANY_GEMS);
+    EXPECT_EQ(board_.takeGems(0, Gems({ 0, 0, -1, 1, 0, -1 })), WRONG_NUMBER_OF_GEMS);
+    EXPECT_EQ(board_.takeGems(0, Gems({ 0, 0, -1, -1, 1, 0 })), WRONG_NUMBER_OF_GEMS);
 
-    TAKE(0, Gems({ 0, 0, -1, 1, 0, -1 }));     // Back to 9
-    TAKE(0, Gems({ 0, 0, -1, -1, 1, 0 }));     // Back to 8
+    BUY(0, g_deck[4], NULL_CARD);
+    RESERVE(0, g_deck[73], NULL_CARD); // Back to 8 gems
 
     EXPECT_EQ(board_.takeGems(0, Gems({ 2, 0, 0 })), INSUFFICIENT_TABLE_GEMS);
     EXPECT_EQ(board_.takeGems(0, Gems({ 1, 0, 0 })), WRONG_NUMBER_OF_GEMS);
-    EXPECT_EQ(board_.takeGems(0, Gems({ 1, 1, 0 })), WRONG_NUMBER_OF_GEMS);
-    EXPECT_EQ(board_.takeGems(0, Gems({ 0, 1, -1, -1, 1 })), WRONG_NUMBER_OF_GEMS);
-    EXPECT_EQ(board_.takeGems(0, Gems({ 2, 1, 1 })), WRONG_NUMBER_OF_GEMS);
-    EXPECT_EQ(board_.takeGems(0, Gems({ 2, 1, 1, 1 })), WRONG_NUMBER_OF_GEMS);
+    EXPECT_EQ(board_.takeGems(0, Gems({ 0, 1, -1, -1, 1 })), INSUFFICIENT_GEMS_TO_RETURN);
+    EXPECT_EQ(board_.takeGems(0, Gems({ -1, -1, 1, 0, 1 })), WRONG_NUMBER_OF_GEMS);
+    EXPECT_EQ(board_.takeGems(0, Gems({ 1, 1, 2 })), TOO_MANY_GEMS);
+    EXPECT_EQ(board_.takeGems(0, Gems({ 1, 1, 2, 1 })), TOO_MANY_GEMS);
 
     EXPECT_EQ(board_.takeGems(0, Gems({ 0, 0, 2, 0 })), LEGAL_MOVE);
 }
 
+
+// Can't end with more than 10.
+// If has anything other than 1/2 or 3/1 must end on 10,
+//      but must also start above 7, and can't do 1/3 or 2+1
+// Ensure all takes and returns are valid, even if ending with 10
+TEST_F(MidGameBoard, returnGems)
+{
+    TAKE(1, Gems({1, 1, 1}));
+    TAKE(1, Gems({0, 1, 0, 1, 1}));
+    TAKE(1, Gems({0, 1, 0, 1, 1})); // Got to 9 gems
+
+    // Can't just take regular gems now, must return some:
+    EXPECT_EQ(board_.takeGems(1, Gems({ 1, 1, 1, 0, 0, 0 })), TOO_MANY_GEMS);
+    EXPECT_EQ(board_.takeGems(1, Gems({ 0, 0, 2, 0, 0, 0 })), TOO_MANY_GEMS);
+
+    EXPECT_EQ(board_.takeGems(1, Gems({ -1, 0, 2, 0, 0, 0 })), LEGAL_MOVE); // OK: we're at 10
+    EXPECT_EQ(board_.takeGems(1, Gems({ 2, 0, -2, 0, 0, 0 })), LEGAL_MOVE); // OK: we're at 10
+
+    EXPECT_EQ(board_.takeGems(1, Gems({ 0, 1, 1, 1, -1, 0 })), TOO_MANY_GEMS);
+    EXPECT_EQ(board_.takeGems(1, Gems({ -3, 0, 2, 0, 0, 0 })), INSUFFICIENT_GEMS_TO_RETURN);
+    EXPECT_EQ(board_.takeGems(1, Gems({ 0, -3, 2, 0, 0, 0 })), WRONG_NUMBER_OF_GEMS);
+    EXPECT_EQ(board_.takeGems(1, Gems({ 0, -2, 2, -1, 0, 0 })), WRONG_NUMBER_OF_GEMS);
+    EXPECT_EQ(board_.takeGems(1, Gems({ 1, 1, -1, -1, 0, 0 })), LEGAL_MOVE);
+    EXPECT_EQ(board_.takeGems(1, Gems({ 0, -1, 0, 1, 0, 0 })), LEGAL_MOVE);
+    EXPECT_EQ(board_.takeGems(1, Gems({ 1, -3, 1, 1, 0, 0 })), LEGAL_MOVE);
+    EXPECT_EQ(board_.takeGems(1, Gems({ 0, 0, 0, 0, 0, 0 })), LEGAL_MOVE);
+
+    // Go back to 7 gems:
+    BUY(1, g_deck[12], NULL_CARD);
+    std::cerr << board_;
+    EXPECT_EQ(board_.takeGems(1, Gems({ 1, 1, 1, -1, 1, 0 })), TOO_MANY_GEMS);
+    EXPECT_EQ(board_.takeGems(1, Gems({ -2, 2, 0, 0, 0, 0 })), WRONG_NUMBER_OF_GEMS);
+    EXPECT_EQ(board_.takeGems(1, Gems({ -2, 2, 2, 0, 0, 0 })), WRONG_NUMBER_OF_GEMS);
+    EXPECT_EQ(board_.takeGems(1, Gems({ 1, 1, 1, -3, 0, 0 })), WRONG_NUMBER_OF_GEMS);
+    EXPECT_EQ(board_.takeGems(1, Gems({ 0, 0, 0, 0, 0, 0 })), WRONG_NUMBER_OF_GEMS);
+}
 
 // Try to buy a card with insufficient gems:
 TEST_F(MidGameBoard, insufficientBuy)
@@ -298,7 +336,6 @@ TEST_F(MidGameBoard, unavailableReserve)
 // Exceed reservation maximum cards:
 TEST_F(MidGameBoard, tooManyReserves)
 {
-    TAKE(0, Gems({1, 1, 0, 0, 0, -2 }));  // Return two YELLOWs
     RESERVE(1, g_deck[13], NULL_CARD);
     RESERVE(1, g_deck[14], NULL_CARD);
     RESERVE(1, g_deck[15], NULL_CARD);

@@ -40,18 +40,18 @@ class Gems {
     // How many gems we have in total (substracting negatives)
     int totalGems() const;
 
-    // How many different gem colors have non-zero quantities?
-    long totalColors() const;
+    // How many different gem colors have positive quantities?
+    long positiveColors() const;
 
     // Does any gem color appear in negative quantities?
     bool hasNegatives() const;
 
-    // What is the maximum quantity of gems of any color?
-    gem_count_t maxQuantity() const;
+    // What is the gem color with the highest gem quantity?
+    gem_color_t maxColor() const;
 
     gem_count_t getCount(gem_color_t color) const { return gems_.at(color); }
 
-    bool empty() const { return (totalColors() == 0); }
+    bool empty() const { return (positiveColors() == 0); }
 
     // Returns the amount of gems from each color that need to be substracted from this
     // to pay for target. Automatically matches yellow gems in this with insufficient

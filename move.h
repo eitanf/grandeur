@@ -18,15 +18,15 @@ enum MoveType { TAKE_GEMS, BUY_CARD, RESERVE_CARD };
 
 enum MoveStatus {
     LEGAL_MOVE = 0,
-    TAKING_YELLOW,   // Can't ask to take a yellow token from table
-    INSUFFICIENT_TABLE_GEMS, // Trying to take unavailable gems
-    TOO_MANY_GEMS,  // Can't collect more than MAX_PLAYER_GEMS
-    WRONG_NUMBER_OF_GEMS, // Can only take three different ones or two of the same
-    INSUFFICIENT_GEMS_TO_RETURN, // Trying to returns gems you don't have
-    BUY_WILDCARD,   // Trying to buy a non-specific card
-    INSUFFICIENT_GEMS,  // Trying to buy a card without enough gems
-    UNAVAILABLE_CARD,   // Attempt to buy a card not available to this player
-    TOO_MANY_RESERVES  // Attempt to reserve a card beyond the 3 allowed.
+    TAKING_YELLOW = 1,   // Can't ask to take a yellow token from table
+    INSUFFICIENT_TABLE_GEMS = 2, // Trying to take unavailable gems
+    TOO_MANY_GEMS = 3,  // Can't collect more than MAX_PLAYER_GEMS
+    WRONG_NUMBER_OF_GEMS = 4, // Can only take three different ones or two of the same
+    INSUFFICIENT_GEMS_TO_RETURN = 5, // Trying to returns gems you don't have
+    BUY_WILDCARD = 6,   // Trying to buy a non-specific card
+    INSUFFICIENT_GEMS = 7,  // Trying to buy a card without enough gems
+    UNAVAILABLE_CARD = 8,   // Attempt to buy a card not available to this player
+    TOO_MANY_RESERVES = 9  // Attempt to reserve a card beyond the 3 allowed.
 };
 
 // A Game move consists of one of three move types, with an associated payload for each.

@@ -17,10 +17,10 @@ int Gems::totalGems() const
     return std::accumulate(gems_.cbegin(), gems_.cend(), 0);
 }
 
-long Gems::totalColors() const
+long Gems::positiveColors() const
 {
     return std::count_if(gems_.cbegin(), gems_.cend(),
-                         [](auto v){ return (v != 0);});
+                         [](auto v){ return (v > 0);});
 }
 
 bool Gems::hasNegatives() const
@@ -29,9 +29,10 @@ bool Gems::hasNegatives() const
                        [](auto v){ return (v < 0);});
 }
 
-gem_count_t Gems::maxQuantity() const
+gem_color_t Gems::maxColor() const
 {
-    return *std::max_element(gems_.cbegin(), gems_.cend());
+    return gem_color_t(std::distance(gems_.cbegin(),
+                                     std::max_element(gems_.cbegin(), gems_.cend())));
 }
 
 
@@ -69,12 +70,12 @@ Gems& Gems::operator+=(const Gems& rhs)
 
 std::ostream& operator<<(std::ostream& os, const Gems& gems)
 {
-    os << "W: " << std::setw(2) << int(gems.gems_[0]);
-    os << " T: " << std::setw(2) << int(gems.gems_[1]);
-    os << " G: " << std::setw(2) << int(gems.gems_[2]);
-    os << " R: " << std::setw(2) << int(gems.gems_[3]);
-    os << " B: " << std::setw(2) << int(gems.gems_[4]);
-    os << " Y: " << std::setw(2) << int(gems.gems_[5]);
+    os << "W: " << int(gems.gems_[0]);
+    os << "  T: " << int(gems.gems_[1]);
+    os << "  G: " << int(gems.gems_[2]);
+    os << "  R: " << int(gems.gems_[3]);
+    os << "  B: " << int(gems.gems_[4]);
+    os << "  Y: " << int(gems.gems_[5]);
     return os;
 }
 

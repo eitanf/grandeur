@@ -25,7 +25,7 @@ Board::Board(unsigned nplayer, const Cards& initialCards, const Nobles& initialN
 MoveStatus
 Board::takeGems(player_id_t pid, const Gems& gems)
 {
-    // First, check for bugs or bad inputs:
+    //// First, check for bugs or bad inputs:
     assert(pid < nplayer_);
     assert(totalGameGems() == g_gem_allocation[nplayer_]);
 
@@ -39,30 +39,43 @@ Board::takeGems(player_id_t pid, const Gems& gems)
         return INSUFFICIENT_TABLE_GEMS;
     }
 
-    // If taking single color, must ensure right amount and sufficient table gems:
-    if (gems.totalColors() == 1) {
-        for (size_t i = 0; i < Gems::NCOLOR; ++i) {
-            const auto count = gems.getCount(gem_color_t(i));
-            if (count != 0 && count != SAME_COLOR_GEMS) {
-                return WRONG_NUMBER_OF_GEMS;
-            }
-            if (count != 0 && tableGems_.getCount(gem_color_t(i)) < MIN_SAME_COLOR_TABLE_GEMS) {
-                return INSUFFICIENT_TABLE_GEMS;
-            }
-        }
-    }
-    else if (gems.totalColors() != DIFFERENT_COLOR_GEMS || gems.maxQuantity() != 1) {
-        return WRONG_NUMBER_OF_GEMS;
+    const auto maxcl = gems.maxColor();
+    const auto maxct = gems.getCount(maxcl);
+    if (maxct == SAME_COLOR_GEMS
+     && tableGems_.getCount(maxcl) < MIN_SAME_COLOR_TABLE_GEMS) {
+        return INSUFFICIENT_TABLE_GEMS;
     }
 
+    // Can't return more than player has:
     if ((gems + playerGems_[pid]).hasNegatives()) {
         assert(!playerGems_[pid].hasNegatives());
         return INSUFFICIENT_GEMS_TO_RETURN;
     }
 
-    // Player can't own too many gems:
-    if ((gems + playerGems_[pid]).totalGems() > MAX_PLAYER_GEMS) {
+    // Can't take more than the max amount of gems allowed to own:
+    const auto postCount = (gems + playerGems_[pid]).totalGems();
+    if (postCount > MAX_PLAYER_GEMS) {
         return TOO_MANY_GEMS;
+    }
+
+    //// OK, now that we're taking the overall right amount of gems, ensure that the
+    // gem combination is legal. Usually that means two gems of one color or one each
+    // of three colors. But if we hit MAX_PLAYER_GEMS, we can return some to stay at limit
+
+    if (postCount < MAX_PLAYER_GEMS) {
+        if (gems.hasNegatives()
+         || (gems.positiveColors() == 1 && maxct != SAME_COLOR_GEMS)
+         || (gems.positiveColors() != 1 &&
+             (gems.positiveColors() != DIFFERENT_COLOR_GEMS
+                     || gems.totalGems() != DIFFERENT_COLOR_GEMS))) {
+            return WRONG_NUMBER_OF_GEMS;
+        }
+    }
+    else {   // We're at MAX_PLAYER_GEMS, can be more flexible on how many colors are active:
+        if (maxct > SAME_COLOR_GEMS
+         || (maxct == SAME_COLOR_GEMS && gems.positiveColors() > 1)) {
+            return WRONG_NUMBER_OF_GEMS;
+        }
     }
 
     // Phew, everything seems in order. Let's take those gems!
@@ -344,8 +357,8 @@ std::ostream& operator<<(std::ostream& os, const Board& board)
     for (player_id_t p = 0; p < board.playersNum(); ++p) {
         os << "Player " << p << ": ";
         os << "points: " << board.playerPoints(p) << "   ";
-        os << "prestige: " << board.playerPrestige(p) << "   ";
         os << "gems: " << board.playerGems(p) << "   ";
+        os << "prestige: " << board.playerPrestige(p) << "   ";
         os << "reserved (visible):";
         for (auto const& c : board.playerReserves(p)) {
             os << "  " << c.id_;

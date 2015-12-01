@@ -12,6 +12,25 @@ using namespace std;
 
 namespace grandeur {
 
+ostream& operator<<(ostream& os, const GameMove& mv)
+{
+    switch (mv.type_) {
+    case TAKE_GEMS:
+        os << "Take" << (mv.payload_.gems_.positiveColors() == 1 ? "2" : "3") << ": ";
+        os << mv.payload_.gems_;
+        break;
+    case BUY_CARD:
+        os << "Buy: " << mv.payload_.card_.id_;
+        break;
+    case RESERVE_CARD:
+        os << "Reserve: " << mv.payload_.card_.id_;
+        break;
+    }
+
+    return os;
+}
+
+
 // Enumerate all legal moves that take gems of a single color:
 static void
 addSameColorGemMoves(vector<GameMove>& moves, player_id_t pid, const Board& board)
@@ -157,29 +176,12 @@ makeMove(Board& board, player_id_t pid, const GameMove& mymove,
 
 void mainGameLoop(/* Board, Deck, reserves[], Player[] */)
 {
+    // TODO: Bypass mode that skips all the error checks in make move, if a move is forced to be legal.
 // Copy and shuffle deck.
     // initialize board with the counts of each type.
     // Pull four cards of each type and add to board. Perhaps do all this before loop.
 
 // At the end of a turn, if anyone reached MIN_WIN_POINTS, find the maximal player and declare them winner
-}
-
-ostream& operator<<(ostream& os, const GameMove& mv)
-{
-    switch (mv.type_) {
-    case TAKE_GEMS:
-        os << "Take" << (mv.payload_.gems_.totalColors() == 1? "2" : "3") << ": ";
-        os << mv.payload_.gems_;
-        break;
-    case BUY_CARD:
-        os << "Buy: " << mv.payload_.card_.id_;
-        break;
-    case RESERVE_CARD:
-        os << "Reserve: " << mv.payload_.card_.id_;
-        break;
-    }
-
-    return os;
 }
 
 
