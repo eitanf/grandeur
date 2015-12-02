@@ -59,6 +59,18 @@ struct Card {
 
 std::ostream& operator<<(std::ostream&, const Card&);
 
+
+// Define an "empty" card:
+static constexpr Card NULL_CARD = { { LOW, CardID::NULLCARD }, { }, YELLOW, 0 };
+
+// Define Wildcards, one per decC:
+static constexpr Card LOW_CARD = { { LOW, CardID::WILDCARD }, { }, YELLOW, 0 };
+static constexpr Card MEDIUM_CARD = { { MEDIUM, CardID::WILDCARD }, { }, YELLOW, 0 };
+static constexpr Card HIGH_CARD = { { HIGH, CardID::WILDCARD }, { }, YELLOW, 0 };
+
+//////////////////////////////////////////////////////////////////////////////
+///// Operations on collections of cards (decks):
+
 using Cards = std::vector<Card>;
 
 // How many cards belong to a given deck type
@@ -87,14 +99,9 @@ bool cardIn(CardID cid, const Container& cards) {
     return (std::end(cards) != cardLocation(cid, cards));
 }
 
-
-// Define an "empty" card:
-static constexpr Card NULL_CARD = { { LOW, CardID::NULLCARD }, { }, YELLOW, 0 };
-
-// Define Wildcards, one per decC:
-static constexpr Card LOW_CARD = { { LOW, CardID::WILDCARD }, { }, YELLOW, 0 };
-static constexpr Card MEDIUM_CARD = { { MEDIUM, CardID::WILDCARD }, { }, YELLOW, 0 };
-static constexpr Card HIGH_CARD = { { HIGH, CardID::WILDCARD }, { }, YELLOW, 0 };
+// Find the first card of a given deck type in a deck, erase it and return it
+// returns NULL_CARD if no more cards left of this deck type
+Card popFromDeck(deck_t dt, Cards& cards);
 
 
 // Global constant card list for the full set of game cards.

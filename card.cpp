@@ -8,6 +8,20 @@
 
 namespace grandeur {
 
+Card popFromDeck(deck_t dt, Cards& cards) {
+    const auto iter = std::find_if(cards.begin(), cards.end(),
+                                   [dt](const Card& card){ return card.id_.type_ == dt; });
+    if (cards.end() == iter) {
+        return NULL_CARD;
+    }
+    else {
+        auto ret = *iter;
+        cards.erase(iter);
+        return ret;
+    }
+}
+
+
 std::ostream&
 operator<<(std::ostream& os, const CardID& id)
 {

@@ -25,7 +25,7 @@ struct Noble {
 std::ostream& operator<<(std::ostream&, const Noble&);
 
 // Mapping from no. of players to no. of nobles initially allocated to board:
-static constexpr const Gems g_noble_allocation[] = { 0, 0, 3, 4, 5 };
+static constexpr const gem_count_t g_noble_allocation[] = { -1, -1, 3, 4, 5 };
 
 // Full set of nobles, from which some will be allocated to board randomly
 static constexpr const Noble g_nobles[] = {

@@ -9,6 +9,9 @@
 
 namespace grandeur {
 
+// Maximum no. of players that can participate in a game:
+static constexpr auto MAX_NPLAYER = 4;
+
 // How many gems a player can own at once (or fewer)
 static constexpr auto MAX_PLAYER_GEMS = 10;
 
@@ -41,12 +44,8 @@ static constexpr gem_count_t INITIAL_GEMS[] = { -1, -1, 4, 5, 7};
 // Except yellow is always five:
 static constexpr gem_count_t YELLOW_COUNT = 5;
 
-// A mapping from no. of players (2--4) to total initial no. of nobles
-static constexpr gem_count_t INITIAL_NOBLES[] = { -1, -1, 3, 4, 5};
-
-
 // No. of cards from each deck type in the initial board
-static constexpr unsigned INITIAL_DECK_CARDS_NUMBER = 4;
+static constexpr unsigned INITIAL_DECK_NCARD = 4;
 
 
 }  // namespace

@@ -226,7 +226,7 @@ Board::reserveCard(player_id_t pid, const Card& card,
 const Cards&
 Board::tableCards() const
 {
-    assert(cards_.size() <= INITIAL_DECK_CARDS_NUMBER * NDECKS);
+    assert(cards_.size() <= INITIAL_DECK_NCARD * NDECKS);
     return cards_;
 }
 

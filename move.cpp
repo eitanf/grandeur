@@ -155,10 +155,10 @@ addReserveCardMoves(vector<GameMove>& moves, player_id_t pid, const Board& board
         moves.push_back(GameMove(LOW_CARD, MoveType::RESERVE_CARD));
     }
     if (board.remainingCards(MEDIUM) > 0) {
-        moves.push_back(GameMove(LOW_CARD, MoveType::RESERVE_CARD));
+        moves.push_back(GameMove(MEDIUM_CARD, MoveType::RESERVE_CARD));
     }
     if (board.remainingCards(HIGH) > 0) {
-        moves.push_back(GameMove(LOW_CARD, MoveType::RESERVE_CARD));
+        moves.push_back(GameMove(HIGH_CARD, MoveType::RESERVE_CARD));
     }
 }
 
@@ -211,14 +211,10 @@ makeMove(Board& board, player_id_t pid, const GameMove& mymove,
 
 
 
-
-void mainGameLoop(/* Board, Deck, reserves[], Player[] */)
+// TODO: Bypass mode that skips all the error checks in make move, if a move is forced to be legal.
+void mainGameLoop(Board& board, Cards& deck/*,  players */)
 {
-    // TODO: Bypass mode that skips all the error checks in make move, if a move is forced to be legal.
-// Copy and shuffle deck.
-    // initialize board with the counts of each type.
-    // Pull four cards of each type and add to board. Perhaps do all this before loop.
-
+    Cards hiddenReserves[MAX_NPLAYER];
 // At the end of a turn, if anyone reached MIN_WIN_POINTS, find the maximal player and declare them winner
 }
 
