@@ -195,7 +195,7 @@ TEST_F(MidGameBoard, legalMoves)
   const auto p2moves = legalMoves(board_, 2, hidden_[2]);
 
   EXPECT_EQ(take2MovesNum(p0moves), 1);
-  EXPECT_EQ(take2MovesNum(p1moves), 0);
+  EXPECT_EQ(take2MovesNum(p1moves), 3);
   EXPECT_EQ(take2MovesNum(p2moves), 1);
 
   EXPECT_EQ(take3MovesNum(p0moves), 4);
@@ -271,13 +271,13 @@ TEST_F(MidGameBoard, returnGems)
 
     // Go back to 7 gems:
     BUY(1, g_deck[12], NULL_CARD);
-    std::cerr << board_;
     EXPECT_EQ(board_.takeGems(1, Gems({ 1, 1, 1, -1, 1, 0 })), TOO_MANY_GEMS);
     EXPECT_EQ(board_.takeGems(1, Gems({ -2, 2, 0, 0, 0, 0 })), WRONG_NUMBER_OF_GEMS);
     EXPECT_EQ(board_.takeGems(1, Gems({ -2, 2, 2, 0, 0, 0 })), WRONG_NUMBER_OF_GEMS);
     EXPECT_EQ(board_.takeGems(1, Gems({ 1, 1, 1, -3, 0, 0 })), WRONG_NUMBER_OF_GEMS);
     EXPECT_EQ(board_.takeGems(1, Gems({ 0, 0, 0, 0, 0, 0 })), WRONG_NUMBER_OF_GEMS);
 }
+
 
 // Try to buy a card with insufficient gems:
 TEST_F(MidGameBoard, insufficientBuy)
