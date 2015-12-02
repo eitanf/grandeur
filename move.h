@@ -6,6 +6,8 @@
 #pragma once
 
 #include <iosfwd>
+#include <functional>
+#include <vector>
 
 #include "card.h"
 #include "constants.h"
@@ -33,17 +35,20 @@ enum MoveStatus {
 // If the payload is gems, it can only be a TAKE_GEMS move type. If it's a card ID,
 // It can be either a BUY_CARD or RESERVE_CARD.
 struct GameMove {
-    GameMove(const Gems& gems) : type_(MoveType::TAKE_GEMS), payload_(gems) {}
-    GameMove(const Card& card, MoveType type) : type_(type), payload_(card) {}
+    constexpr GameMove(const Gems& gems) : type_(MoveType::TAKE_GEMS), payload_(gems) {}
+    constexpr GameMove(const Card& card, MoveType type) : type_(type), payload_(card) {}
 
     MoveType type_;
     union payload {
         const Gems gems_;   // In case of TAKE_GEMS
         const Card card_;  // Otherwise
-        payload(const Gems& gems) : gems_(gems) {};
-        payload(const Card& card) : card_(card) {};
+        constexpr payload(const Gems& gems) : gems_(gems) {};
+        constexpr payload(const Card& card) : card_(card) {};
     } payload_;
 };
+
+static constexpr GameMove NULL_MOVE(NULL_CARD, MoveType::BUY_CARD);
+
 std::ostream& operator<<(std::ostream&, const GameMove&);
 
 
@@ -52,6 +57,41 @@ using Moves = std::vector<GameMove>;
 
 class Board;
 class Player;
+
+/////////////////////////////////////////////////////
+// MoveNotifier is a singleton that lets interested parties (e.g., players)
+// register to receive notifications for any board changes. They register
+// a callback function that gets the new state of the Board, and if a move was
+// just made, the player who made it and the move (NULL_MOVE otherwise).
+class MoveNotifier {
+  public:
+    using observer_t = std::function<void(const Board&, player_id_t, const GameMove&)>;
+
+    static MoveNotifier& instance()
+    {
+        static MoveNotifier singleton;
+        return singleton;
+    }
+
+    void registerObserver(observer_t observer) { observers_.push_back(observer); }
+
+    void notifyObservers(const Board& board, player_id_t pid, const GameMove& mv)
+    {
+        for (auto obs : observers_) {
+            obs(board, pid, mv);
+        }
+    }
+
+
+  private:
+    std::vector<observer_t> observers_;
+    MoveNotifier() = default;
+    MoveNotifier(const MoveNotifier&) = delete;
+    MoveNotifier& operator=(const MoveNotifier&) = delete;
+};
+
+/////////////////////////////////////////////////////
+// Free functions for game play
 
 // Update the board status in response to game move (one of three types).
 // Returns an error code if the move could not be carried out, LEGAL_MOVE otherwise.
@@ -72,7 +112,8 @@ MoveStatus isLegalMove(Board, player_id_t, const GameMove&, Cards myhidden);
 Moves
 legalMoves(const Board& board, player_id_t pid, const Cards& myHidden);
 
-// mainGaimLoop is the run an entire new game.
+
+// mainGaimLoop is the run a complete game, start to finish
 player_id_t mainGameLoop(Board&, Cards&, std::vector<const Player*>&);
 
 } // namespace

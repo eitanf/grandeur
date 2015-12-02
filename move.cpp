@@ -216,6 +216,8 @@ mainGameLoop(Board& board, Cards& deck, Players& players)
 {
     Cards hiddenReserves[MAX_NPLAYER];
 
+    MoveNotifier::instance().notifyObservers(board, 0, NULL_MOVE);
+
     while (!board.gameOver()) {
         for (player_id_t pid = 0; pid < board.playersNum(); ++pid) {
             const auto legal = legalMoves(board, pid, hiddenReserves[pid]);
@@ -228,6 +230,7 @@ mainGameLoop(Board& board, Cards& deck, Players& players)
             }
 
             makeMove(board, pid, pMove, hiddenReserves[pid], replacement);
+            MoveNotifier::instance().notifyObservers(board, pid, pMove);
         }
     }
 
