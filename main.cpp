@@ -13,6 +13,7 @@
 #include "constants.h"
 #include "move.h"
 #include "noble.h"
+#include "player.h"
 
 #include <algorithm>
 #include <vector>
@@ -21,7 +22,7 @@ using namespace std;
 
 namespace grandeur {
 
-void parseCmdline(int argc, char **argv, int& nplayer /* players& */)
+void initConfig(int argc, char **argv, int& nplayer, Players& players)
 {
 // Create players from factory by string name
 }
@@ -53,16 +54,16 @@ int main(int argc, char** argv)
     using namespace grandeur;
 
     int nplayer;
-    /* Player* players[MAX_NPLAYER]; */
+    Players players;
 
-    parseCmdline(argc, argv, nplayer);
+    initConfig(argc, argv, nplayer, players);
 
     // Create shuffled card deck:
     Cards deck(begin(g_deck), end(g_deck));
     random_shuffle(begin(deck), end(deck));
     auto board = createBoard(nplayer, deck);
 
-    mainGameLoop(board, deck /*, players */);
+    mainGameLoop(board, deck, players);
 
     return 0;
 }

@@ -4,10 +4,10 @@
 
 #include <cassert>
 #include <iostream>
-#include <iterator>
 
 #include "move.h"
 #include "board.h"
+#include "player.h"
 
 using namespace std;
 
@@ -60,7 +60,7 @@ isLegalMove(const Gems& takeGems, const Gems& tableGems, const Gems& myGems)
 // A gem-count combination is an ascending-sorted array of five counts, representing
 // How many gems of each colors to take (where the actual colors vary by permutation).
 static void
-addTakeGemCombination(vector<GameMove>& moves, player_id_t pid, const Board& board,
+addTakeGemCombination(Moves& moves, player_id_t pid, const Board& board,
                       vector<gem_count_t> counts)
 {
     do {
@@ -73,7 +73,7 @@ addTakeGemCombination(vector<GameMove>& moves, player_id_t pid, const Board& boa
 }
 
 static void
-addTakeGemMoves(vector<GameMove>& moves, player_id_t pid, const Board& board)
+addTakeGemMoves(Moves& moves, player_id_t pid, const Board& board)
 {
     static const vector<gem_count_t> sameColor =   {  0,  0,  0,  0,  2 };
     static const vector<gem_count_t> diffColors =  {  0,  0,  1,  1,  1 };
@@ -116,7 +116,7 @@ addTakeGemMoves(vector<GameMove>& moves, player_id_t pid, const Board& board)
 
 // Enumerate all the cards (table/reserves) we can afford to buy:
 static void
-addBuyCardMoves(vector<GameMove>& moves, player_id_t pid, const Board& board, const Cards& myhidden)
+addBuyCardMoves(Moves& moves, player_id_t pid, const Board& board, const Cards& myhidden)
 {
     const auto& gems = board.playerGems(pid);
     const auto& prestige = board.playerPrestige(pid);
@@ -137,7 +137,7 @@ addBuyCardMoves(vector<GameMove>& moves, player_id_t pid, const Board& board, co
 
 // Enumerate all the cards that can be reserved:
 static void
-addReserveCardMoves(vector<GameMove>& moves, player_id_t pid, const Board& board, const Cards& myhidden)
+addReserveCardMoves(Moves& moves, player_id_t pid, const Board& board, const Cards& myhidden)
 {
     if (board.playerReserves(pid).size() + myhidden.size() >= MAX_PLAYER_RESERVES
         || board.playerGems(pid).totalGems() >= MAX_PLAYER_GEMS
@@ -164,10 +164,10 @@ addReserveCardMoves(vector<GameMove>& moves, player_id_t pid, const Board& board
 
 
 // Accumulate legal moves of all four types:
-vector<GameMove>
+Moves
 legalMoves(const Board& board, player_id_t pid, const Cards& myHidden)
 {
-    vector<GameMove> ret;
+    Moves ret;
 
     addTakeGemMoves(ret, pid, board);
     addBuyCardMoves(ret, pid, board, myHidden);
@@ -209,9 +209,10 @@ makeMove(Board& board, player_id_t pid, const GameMove& mymove,
     return status;
 }
 
+
 // TODO: Bypass mode that skips all the error checks in make move, if a move is forced to be legal.
 player_id_t
-mainGameLoop(Board& board, Cards& deck/*, Players& players*/)
+mainGameLoop(Board& board, Cards& deck, Players& players)
 {
     Cards hiddenReserves[MAX_NPLAYER];
 

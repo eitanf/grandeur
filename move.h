@@ -44,12 +44,14 @@ struct GameMove {
         payload(const Card& card) : card_(card) {};
     } payload_;
 };
-
 std::ostream& operator<<(std::ostream&, const GameMove&);
 
+
 using player_id_t = unsigned;
+using Moves = std::vector<GameMove>;
 
 class Board;
+class Player;
 
 // Update the board status in response to game move (one of three types).
 // Returns an error code if the move could not be carried out, LEGAL_MOVE otherwise.
@@ -67,10 +69,10 @@ MoveStatus isLegalMove(Board, player_id_t, const GameMove&, Cards myhidden);
 // The only legal move that this function will not identify is one where
 // a player takes an excess over MAX_GEMS and then returns some. This move is
 // however identified as legal by isLegalMove().
-std::vector<GameMove>
+Moves
 legalMoves(const Board& board, player_id_t pid, const Cards& myHidden);
 
 // mainGaimLoop is the run an entire new game.
-player_id_t mainGameLoop(Board&, Cards&);
+player_id_t mainGameLoop(Board&, Cards&, std::vector<const Player*>&);
 
-}
+} // namespace
