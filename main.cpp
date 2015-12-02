@@ -8,11 +8,11 @@
  * (C) 2015 Eitan Frachtenberg. GPLv2 License.
  */
 
-#include "board.h"
-#include "card.h"
 #include "constants.h"
-#include "move.h"
+#include "card.h"
 #include "noble.h"
+#include "move.h"
+#include "board.h"
 #include "player.h"
 
 #include <algorithm>
@@ -22,13 +22,15 @@ using namespace std;
 
 namespace grandeur {
 
-void initConfig(int argc, char **argv, int& nplayer, Players& players)
+void
+initConfig(int argc, char **argv, int& nplayer, Players& players)
 {
 // Create players from factory by string name
 }
 
 
-Board createBoard(int nplayer, Cards& deck)
+Board
+createBoard(int nplayer, Cards& deck)
 {
     // Copy initial 12 cards to initial and remove from deck
     Cards initialCards;
@@ -46,6 +48,13 @@ Board createBoard(int nplayer, Cards& deck)
     return (Board(nplayer, initialCards, nobles));
 }
 
+void
+cleanUp(Players& players)
+{
+    for (auto p : players) {
+        delete p;
+    }
+}
 
 }  // namspace
 
@@ -65,5 +74,6 @@ int main(int argc, char** argv)
 
     mainGameLoop(board, deck, players);
 
+    cleanUp(players);
     return 0;
 }
