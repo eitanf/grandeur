@@ -3,7 +3,7 @@ project(grandeur)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 
-set(SOURCE_FILES main.cpp move.cpp move.h gems.cpp gems.h card.cpp card.h board.cpp board.h constants.h noble.h noble.cpp player.cpp player.h)
+set(SOURCE_FILES main.cpp move.cpp move.h gems.cpp gems.h card.cpp card.h board.cpp board.h constants.h noble.h noble.cpp player.cpp player.h random_player.cpp random_player.h)
 add_executable(grandeur ${SOURCE_FILES})
 
 add_subdirectory(tests)
