@@ -29,6 +29,7 @@ PlayerFactory::registerPlayer(name_t name, creator_t creator)
     pImpl->map_[name] = creator;
 }
 
+
 const Player*
 PlayerFactory::create(name_t name, player_id_t pid)
 {
@@ -39,5 +40,17 @@ PlayerFactory::create(name_t name, player_id_t pid)
         return iter->second(pid);
     }
 }
+
+
+vector<PlayerFactory::name_t>
+PlayerFactory::names() const
+{
+    vector<name_t> ret;
+    for (const auto& i : pImpl->map_) {
+        ret.push_back(i.first);
+    }
+    return ret;
+}
+
 
 } // namespace

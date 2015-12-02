@@ -34,7 +34,7 @@ using Players = std::vector<const Player*>;
 class PlayerFactory {
   public:
     using creator_t = std::function<const Player* (player_id_t)>;
-    using name_t = const std::string;
+    using name_t = std::string;
 
     // We register Player classes with a unioque name, and a callback that
     // creates (and allocates) a new concrete Player instance
@@ -43,6 +43,9 @@ class PlayerFactory {
     // Create a new Player with a given player ID.
     // Returns nullptr if the name can't be found in the registry.
     const Player* create(name_t, player_id_t);
+
+    // Return a list of all Player names registered to factory
+    std::vector<name_t> names() const;
 
     static PlayerFactory& instance()
     {

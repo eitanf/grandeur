@@ -38,6 +38,12 @@ die(const string msg = "") {
     cerr << "Usage: [options] p1 p2 [p3 [p4]]\n";
     cerr << "-h --help: display this message\n";
     cerr << "-s --seed num: Set PRNG seed for board generation\n";
+    cerr << "\nValid player choices are:";
+    for (auto name : PlayerFactory::instance().names()) {
+        cerr << "  " << name;
+    }
+    cerr << endl;
+
     exit(-1);
 }
 
