@@ -12,23 +12,59 @@
 #include "card.h"
 #include "noble.h"
 #include "move.h"
-#include "board.h"
 #include "player.h"
+#include "board.h"
 
 #include <algorithm>
+#include <iostream>
+#include <random>
+#include <string>
 #include <vector>
 
 using namespace std;
 
 namespace grandeur {
 
+// A PRNG to initialize game state:
+static std::mt19937 prng;
+
+
+/////////////////////////////////////////////////////////////
 void
-initConfig(int argc, char **argv, int& nplayer, Players& players)
-{
-// Create players from factory by string name
+die(const string msg = "") {
+    if (msg != "") {
+        cerr << "Error: " << msg << endl;
+    }
+    cerr << "Usage: [options] p1 p2 [p3 [p4]]\n";
+    cerr << "-h --help: display this message\n";
+    cerr << "-s --seed num: Set PRNG seed for board generation\n";
+    exit(-1);
 }
 
 
+/////////////////////////////////////////////////////////////
+void
+initConfig(const vector<string>& args, int& nplayer, Players& players)
+{
+    for (auto i = args.cbegin(); i != args.cend(); ++i) {
+        if (*i == "-h" || *i == "--help") die();
+
+        if (*i == "-s" || *i == "--seed") {
+            if (++i == args.cend()) die("missing seed value");
+            prng.seed(atoll((i->c_str())));
+            continue;
+        }
+
+        // If we got here, we have an arbitrary string. Try to make Player:
+        players.push_back(PlayerFactory::instance().create(*i, nplayer++));
+        if (nullptr == players.back())   die ("unrecognized player " + *i);
+    }
+
+    if (nplayer < 2) die("must define at least two players");
+}
+
+
+/////////////////////////////////////////////////////////////
 Board
 createBoard(int nplayer, Cards& deck)
 {
@@ -48,6 +84,8 @@ createBoard(int nplayer, Cards& deck)
     return (Board(nplayer, initialCards, nobles));
 }
 
+
+/////////////////////////////////////////////////////////////
 void
 cleanUp(Players& players)
 {
@@ -56,8 +94,11 @@ cleanUp(Players& players)
     }
 }
 
-}  // namspace
 
+}  // namespace
+
+/////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////
 int main(int argc, char** argv)
 {
     using namespace grandeur;
@@ -65,7 +106,7 @@ int main(int argc, char** argv)
     int nplayer;
     Players players;
 
-    initConfig(argc, argv, nplayer, players);
+    initConfig(vector<string>(argv + 1, argv + argc), nplayer, players);
 
     // Create shuffled card deck:
     Cards deck(begin(g_deck), end(g_deck));

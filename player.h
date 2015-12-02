@@ -9,6 +9,7 @@
 
 #include <functional>
 #include <memory>
+#include <string>
 #include <vector>
 
 namespace grandeur {
@@ -33,7 +34,7 @@ using Players = std::vector<const Player*>;
 class PlayerFactory {
   public:
     using creator_t = std::function<const Player* (player_id_t)>;
-    using name_t = const char*;
+    using name_t = const std::string;
 
     // We register Player classes with a unioque name, and a callback that
     // creates (and allocates) a new concrete Player instance
