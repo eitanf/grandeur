@@ -223,6 +223,24 @@ Board::reserveCard(player_id_t pid, const Card& card,
 }
 
 
+// A game is over when a player reached MIN_WIN_POINTS or when all table cards
+// have been exhuasted
+bool
+Board::gameOver() const
+{
+    return (playerPoints_[leadingPlayer()] >= MIN_WIN_POINTS || cards_.empty());
+}
+
+
+// Which player has the most prestige points?
+player_id_t
+Board::leadingPlayer() const
+{
+    return distance(begin(playerPoints_),
+                    max_element(begin(playerPoints_), end(playerPoints_)));
+}
+
+
 const Cards&
 Board::tableCards() const
 {

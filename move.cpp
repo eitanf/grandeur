@@ -209,13 +209,29 @@ makeMove(Board& board, player_id_t pid, const GameMove& mymove,
     return status;
 }
 
-
-
 // TODO: Bypass mode that skips all the error checks in make move, if a move is forced to be legal.
-void mainGameLoop(Board& board, Cards& deck/*,  players */)
+player_id_t
+mainGameLoop(Board& board, Cards& deck/*, Players& players*/)
 {
     Cards hiddenReserves[MAX_NPLAYER];
-// At the end of a turn, if anyone reached MIN_WIN_POINTS, find the maximal player and declare them winner
+
+    while (!board.gameOver()) {
+        for (player_id_t pid = 0; pid < board.playersNum(); ++pid) {
+            const auto legal = legalMoves(board, pid, hiddenReserves[pid]);
+            auto pMove = legal[0]; //players[pid]->getMove(board, hiddenReserves[pid], legal);
+
+            Card replacement = NULL_CARD;
+            if (pMove.type_ != MoveType::TAKE_GEMS
+             && cardIn(pMove.payload_.card_.id_, deck)) {
+                replacement = popFromDeck(pMove.payload_.card_.id_.type_, deck);
+            }
+
+            makeMove(board, pid, pMove, hiddenReserves[pid], replacement);
+        }
+    }
+
+    // End of game: find winner:
+    return board.leadingPlayer();
 }
 
 

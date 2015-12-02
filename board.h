@@ -61,6 +61,12 @@ class Board {
 
     const Nobles& tableNobles() const { return nobles_; }
 
+    // Which player has the most prestige points?
+    player_id_t leadingPlayer() const;
+
+    // Has the game been won or played to completion?
+    bool gameOver() const;
+
 
   private:
     // Like buyCard, but for a card in a specific set of cards:

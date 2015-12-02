@@ -71,6 +71,6 @@ std::vector<GameMove>
 legalMoves(const Board& board, player_id_t pid, const Cards& myHidden);
 
 // mainGaimLoop is the run an entire new game.
-void mainGameLoop(Board&, Cards&);
+player_id_t mainGameLoop(Board&, Cards&);
 
 }
