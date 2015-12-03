@@ -20,7 +20,7 @@ class Player {
     virtual ~Player() = default;
 
     // Main interface Player must satisfy: pick a game move for a given board.
-    virtual GameMove getMove(Board& board, Cards& hidden, const Moves& legal) = 0;
+    virtual GameMove getMove(Board& board, Cards& hidden, const Moves& legal) const = 0;
 
     player_id_t pid_;
 };

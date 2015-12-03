@@ -10,7 +10,7 @@
 namespace grandeur {
 
 GameMove
-RandomPlayer::getMove(Board&, Cards&, const Moves& legal)
+RandomPlayer::getMove(Board&, Cards&, const Moves& legal) const
 {
     static const char* seedstr = std::getenv("GRANDEUR_PLAYER_SEED");
     static std::mt19937_64 generator(seedstr? std::atoll(seedstr) : 1ULL);

@@ -1,0 +1,77 @@
+//
+// Created by eitan on 12/2/15.
+//
+
+#include "config.h"
+#include "move.h"
+
+#include <iostream>
+
+namespace grandeur {
+
+using namespace std;
+
+/////////////////////////////////////////////////////////////
+Config::Config(const std::vector<std::string>& args)
+{
+    for (auto i = args.cbegin(); i != args.cend(); ++i) {
+        if (*i == "-h" || *i == "--help") die();
+
+        if (*i == "-s" || *i == "--seed") {
+            if (++i == args.cend()) die("missing seed value");
+            prng_.seed(atoll((i->c_str())));
+            continue;
+        }
+
+        if (*i == "-l" || *i == "--log") {
+            if (++i == args.cend()) die("missing filename");
+            loggerPtr_ = new Logger(*i);
+            MoveNotifier::instance().registerObserver(
+                [=](const Board& board, player_id_t pid, const GameMove& mv)
+                    { loggerPtr_->log(board, pid, mv); });
+            continue;
+        }
+
+        // If we got here, we have an arbitrary string. Try to make Player:
+        players_.push_back(PlayerFactory::instance().create(*i, players_.size()));
+        if (nullptr == players_.back())   die ("unrecognized player " + *i);
+    }
+
+    if (players_.size() < 2) die("must define at least two players");
+}
+
+
+/////////////////////////////////////////////////////////////
+Config::~Config()
+{
+    for (auto p : players_) {
+        delete p;
+    }
+
+    if (loggerPtr_) {
+        delete loggerPtr_;
+    }
+}
+
+
+/////////////////////////////////////////////////////////////
+void
+Config::die(const string msg) {
+    if (msg != "") {
+        cerr << "Error: " << msg << endl;
+    }
+    cerr << "Usage: [options] p1 p2 [p3 [p4]]\n";
+    cerr << "-h --help: display this message\n";
+    cerr << "-s --seed num: Set PRNG seed for board generation\n";
+    cerr << "-l --log filename: Log board and moves to a file\n";
+    cerr << "\nValid player choices are:";
+    for (auto name : PlayerFactory::instance().names()) {
+        cerr << "  " << name;
+    }
+    cerr << endl;
+
+    exit(-1);
+}
+
+
+}  // namespace

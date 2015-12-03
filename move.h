@@ -38,6 +38,8 @@ struct GameMove {
     constexpr GameMove(const Gems& gems) : type_(MoveType::TAKE_GEMS), payload_(gems) {}
     constexpr GameMove(const Card& card, MoveType type) : type_(type), payload_(card) {}
 
+    bool operator==(const GameMove& rhs) const;
+
     MoveType type_;
     union payload {
         const Gems gems_;   // In case of TAKE_GEMS
@@ -62,7 +64,10 @@ class Player;
 // MoveNotifier is a singleton that lets interested parties (e.g., players)
 // register to receive notifications for any board changes. They register
 // a callback function that gets the new state of the Board, and if a move was
-// just made, the player who made it and the move (NULL_MOVE otherwise).
+// just made, the player who made it and the move.
+// There are two special cases when NULL_MOVE is passed: At the beginning of the
+// game, before any moves were made, and at the end of a game, with the winning
+// player passed as the moving player's pid.
 class MoveNotifier {
   public:
     using observer_t = std::function<void(const Board&, player_id_t, const GameMove&)>;

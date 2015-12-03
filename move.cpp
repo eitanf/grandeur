@@ -13,6 +13,19 @@ using namespace std;
 
 namespace grandeur {
 
+bool GameMove::operator==(const GameMove& rhs) const
+{
+    if (type_ != rhs.type_) {
+        return false;
+    }
+    if (type_ == MoveType::TAKE_GEMS) {
+        return payload_.gems_ == rhs.payload_.gems_;
+    } else {
+        return payload_.card_ == rhs.payload_.card_;
+    }
+}
+
+
 ostream& operator<<(ostream& os, const GameMove& mv)
 {
     switch (mv.type_) {
@@ -34,7 +47,7 @@ ostream& operator<<(ostream& os, const GameMove& mv)
 // Test whether a combination of gems we're trying to take are too many gems for
 // the given table gems
 bool
-isLegalMove(const Gems& takeGems, const Gems& tableGems, const Gems& myGems)
+isLegalTake(const Gems& takeGems, const Gems& tableGems, const Gems& myGems)
 {
     // Are we taking more gems than the table has?
     if ((tableGems - takeGems).hasNegatives()) {
@@ -65,7 +78,7 @@ addTakeGemCombination(Moves& moves, player_id_t pid, const Board& board,
 {
     do {
         const Gems trygems = Gems(begin(counts), end(counts));
-        if (isLegalMove(trygems, board.tableGems(), board.playerGems(pid))) {
+        if (isLegalTake(trygems, board.tableGems(), board.playerGems(pid))) {
             moves.push_back(GameMove(trygems));
         }
     } while (next_permutation(begin(counts), end(counts)));
@@ -173,7 +186,6 @@ legalMoves(const Board& board, player_id_t pid, const Cards& myHidden)
     addBuyCardMoves(ret, pid, board, myHidden);
     addReserveCardMoves(ret, pid, board, myHidden);
 
-    assert(!ret.empty());
     return ret;
 }
 
@@ -221,11 +233,15 @@ mainGameLoop(Board& board, Cards& deck, Players& players)
     while (!board.gameOver()) {
         for (player_id_t pid = 0; pid < board.playersNum(); ++pid) {
             const auto legal = legalMoves(board, pid, hiddenReserves[pid]);
-            auto pMove = legal[0]; //players[pid]->getMove(board, hiddenReserves[pid], legal);
+            if (legal.empty()) {
+                cerr << "Player " << pid << " has no legal mooves! skipping...\n";
+                continue;
+            }
 
+            auto pMove = players[pid]->getMove(board, hiddenReserves[pid], legal);
             Card replacement = NULL_CARD;
             if (pMove.type_ != MoveType::TAKE_GEMS
-             && cardIn(pMove.payload_.card_.id_, deck)) {
+             && cardIn(pMove.payload_.card_.id_, board.tableCards())) {
                 replacement = popFromDeck(pMove.payload_.card_.id_.type_, deck);
             }
 
@@ -235,7 +251,9 @@ mainGameLoop(Board& board, Cards& deck, Players& players)
     }
 
     // End of game: find winner:
-    return board.leadingPlayer();
+    const auto winner = board.leadingPlayer();
+    MoveNotifier::instance().notifyObservers(board, winner, NULL_MOVE);
+    return winner;
 }
 
 
