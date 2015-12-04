@@ -85,6 +85,8 @@ addTakeGemCombination(Moves& moves, player_id_t pid, const Board& board,
 
 }
 
+// Enumerate all possible combinations of taking gems that match the amount
+// of gems player already has.
 static void
 addTakeGemMoves(Moves& moves, player_id_t pid, const Board& board)
 {

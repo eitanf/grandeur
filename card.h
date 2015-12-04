@@ -186,7 +186,7 @@ static constexpr const Card g_deck[] = {
         { { HIGH, 76 }, { 6, 3, 0, 0, 3 }, TEAL, 4 },
         { { HIGH, 77 }, { 7, 3, 0, 0, 0 }, TEAL, 5 },
         { { HIGH, 78 }, { 0, 3, 3, 5, 3 }, WHITE, 3 },
-        { { HIGH, 80 }, { 0, 0, 0, 0, 7 }, WHITE, 4 },
+        { { HIGH, 79 }, { 0, 0, 0, 0, 7 }, WHITE, 4 },
         { { HIGH, 80 }, { 3, 0, 0, 3, 6 }, WHITE, 4 },
         { { HIGH, 81 }, { 3, 0, 0, 0, 7 }, WHITE, 5 },
         { { HIGH, 82 }, { 5, 3, 0, 3, 3 }, GREEN, 3 },
