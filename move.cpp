@@ -238,12 +238,16 @@ mainGameLoop(Board& board, Cards& deck, Players& players)
 
     MoveNotifier::instance().notifyObservers(board, 0, NULL_MOVE);
 
-    while (!board.gameOver()) {
+    bool stalemate = false;
+    while (!board.gameOver() && !stalemate) {
+
         for (player_id_t pid = 0; pid < board.playersNum(); ++pid) {
+            stalemate = true;
             const auto legal = legalMoves(board, pid, hiddenReserves[pid]);
             if (legal.empty()) {
-                cerr << "Player " << pid << " has no legal mooves! skipping...\n";
                 continue;
+            } else {
+              stalemate = false;
             }
 
             auto pMove = players[pid]->getMove(board, hiddenReserves[pid], legal);

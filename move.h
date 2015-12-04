@@ -67,7 +67,7 @@ class Player;
 // just made, the player who made it and the move.
 // There are two special cases when NULL_MOVE is passed: At the beginning of the
 // game, before any moves were made, and at the end of a game, with the winning
-// player passed as the moving player's pid.
+// player passed as the moving player's pid (or an index too large if stalemate)
 class MoveNotifier {
   public:
     using observer_t = std::function<void(const Board&, player_id_t, const GameMove&)>;

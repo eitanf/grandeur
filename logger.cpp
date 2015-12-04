@@ -46,7 +46,12 @@ grandeur::Logger::log(const Board& board, player_id_t pid, const GameMove& mv)
         pImpl_->firstTime_ = false;
     }
     else if (mv == NULL_MOVE) {  // Last move
-        pImpl_->ofile_ << "GAME OVER! Player " << pid << " wins!\n";
+        pImpl_->ofile_ << "GAME OVER! ";
+        if (pid < board.playersNum()) {
+            pImpl_->ofile_ << "Player " << pid << " wins!\n";
+        } else {
+            pImpl_->ofile_ << "Stalemate!\n";
+        }
     }
     else {
         pImpl_->ofile_ << "Player " << pid << " made move: " << mv << "\n";

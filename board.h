@@ -62,6 +62,7 @@ class Board {
     const Nobles& tableNobles() const { return nobles_; }
 
     // Which player has the most prestige points?
+    // If no single player leads, returns a number larger than no. of players
     player_id_t leadingPlayer() const;
 
     // Has the game been won or played to completion?

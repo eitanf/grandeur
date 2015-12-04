@@ -231,7 +231,8 @@ Board::reserveCard(player_id_t pid, const Card& card,
 bool
 Board::gameOver() const
 {
-    return (playerPoints_[leadingPlayer()] >= MIN_WIN_POINTS || cards_.empty());
+    return (*max_element(begin(playerPoints_), end(playerPoints_)) >= MIN_WIN_POINTS
+         || cards_.empty());
 }
 
 
@@ -239,8 +240,17 @@ Board::gameOver() const
 player_id_t
 Board::leadingPlayer() const
 {
-    return distance(begin(playerPoints_),
-                    max_element(begin(playerPoints_), end(playerPoints_)));
+    player_id_t which = 0;
+    gem_count_t maxs = playerPoints_[which];
+    for (auto i = which + 1; i < nplayer_; ++i) {
+        if (playerPoints_[i] > maxs) {
+            which = i;
+            maxs = playerPoints_[i];
+        } else if (playerPoints_[i] == maxs) {
+            return nplayer_ + 1;
+        }
+    }
+    return which;
 }
 
 
