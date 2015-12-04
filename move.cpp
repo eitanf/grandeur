@@ -142,6 +142,8 @@ addBuyCardMoves(Moves& moves, player_id_t pid, const Board& board, const Cards& 
     for (const auto& card : allCards) {
         const auto balance = gems.actualCost(card.cost_ - prestige);
         if (!((gems - balance).hasNegatives())) {
+            assert(!card.isWild());
+            assert(!card.isNull());
             moves.push_back(GameMove(card, MoveType::BUY_CARD));
         }
     }
@@ -210,10 +212,13 @@ makeMove(Board& board, player_id_t pid, const GameMove& mymove,
         break;
 
     case MoveType::BUY_CARD:
+        assert(!mymove.payload_.card_.isWild());
+        assert(!mymove.payload_.card_.isNull());
         status = board.buyCard(pid, mymove.payload_.card_.id_, myhidden, replacement);
         break;
 
     case MoveType::RESERVE_CARD:
+        assert(!mymove.payload_.card_.isNull());
         status = board.reserveCard(pid, mymove.payload_.card_, myhidden, replacement);
         break;
     }
@@ -227,6 +232,7 @@ player_id_t
 mainGameLoop(Board& board, Cards& deck, Players& players)
 {
     Cards hiddenReserves[MAX_NPLAYER];
+    MoveStatus ok = LEGAL_MOVE;
 
     MoveNotifier::instance().notifyObservers(board, 0, NULL_MOVE);
 
@@ -239,13 +245,25 @@ mainGameLoop(Board& board, Cards& deck, Players& players)
             }
 
             auto pMove = players[pid]->getMove(board, hiddenReserves[pid], legal);
+
+            // Find replacement card if buying/reserving from table:
             Card replacement = NULL_CARD;
             if (pMove.type_ != MoveType::TAKE_GEMS
              && cardIn(pMove.payload_.card_.id_, board.tableCards())) {
                 replacement = popFromDeck(pMove.payload_.card_.id_.type_, deck);
             }
 
-            makeMove(board, pid, pMove, hiddenReserves[pid], replacement);
+            // find first available card if reserving from undealt cards:
+            if (pMove.type_ == MoveType::RESERVE_CARD && pMove.payload_.card_.isWild()) {
+                auto card = popFromDeck(pMove.payload_.card_.id_.type_, deck);
+                assert(!card.isNull());
+                auto newMove = GameMove(card, pMove.type_);
+                ok = makeMove(board, pid, newMove, hiddenReserves[pid], replacement);
+            } else {
+                ok = makeMove(board, pid, pMove, hiddenReserves[pid], replacement);
+            }
+
+            assert(ok == LEGAL_MOVE);
             MoveNotifier::instance().notifyObservers(board, pid, pMove);
         }
     }

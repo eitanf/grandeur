@@ -49,7 +49,8 @@ struct Card {
     Card& operator=(Card&&) = default;
 
     bool operator==(const Card& rhs) const { return id_ == rhs.id_; }
-
+    constexpr bool isNull() const { return id_.seq_ == CardID::NULLCARD; }
+    constexpr bool isWild() const { return id_.seq_ == CardID::WILDCARD; }
 
     CardID id_;
     Gems cost_;

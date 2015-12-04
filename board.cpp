@@ -97,17 +97,17 @@ Board::buyCard(player_id_t pid, CardID cid, Cards& hidden, const Card& replaceme
     assert(totalGameGems() == g_gem_allocation[nplayer_]);
 
     // Ensure that any replacement card comes from non-empty deck:
-    assert(replacement == NULL_CARD || remainingCards_[replacement.id_.type_] > 0);
+    assert(replacement.isNull() || remainingCards_[replacement.id_.type_] > 0);
 
     // Ensure that replacement is only needed for table cards:
-    assert(replacement == NULL_CARD || cardIn(cid, cards_));
+    assert(replacement.isNull() || cardIn(cid, cards_));
 
     // Ensure that buying a card from reserves means no replacement card:
     assert((!cardIn(cid, hidden) && !cardIn(cid, playerReserves_[pid])) ||
-           (replacement == NULL_CARD));
+           (replacement.isNull()));
 
     // Ensure replacement is legitimate (not previously seen):
-    assert(replacement.id_.seq_ != CardID::WILDCARD);
+    assert(!replacement.isWild());
     assert(!cardIn(replacement.id_, cards_));
     assert(!cardIn(replacement.id_, purchased_));
     assert(!cardIn(replacement.id_, hidden));
@@ -157,12 +157,14 @@ Board::reserveCard(player_id_t pid, const Card& card,
     ///// First, check for bad programmatic inputs (bugs):
     assert(pid < nplayer_);
     assert(totalGameGems() == g_gem_allocation[nplayer_]);
+    assert(!card.isNull());
+    assert(!card.isWild());
 
     // Ensure that any replacement card comes from non-empty deck
-    assert(replacement == NULL_CARD || remainingCards_[replacement.id_.type_] > 0);
+    assert(replacement.isNull() || remainingCards_[replacement.id_.type_] > 0);
 
     // Ensure replacment is legitimate (not previously seen):
-    assert(replacement.id_.seq_ != CardID::WILDCARD);
+    assert(!replacement.isWild());
     assert(!cardIn(replacement.id_, cards_));
     assert(!cardIn(replacement.id_, purchased_));
     assert(!cardIn(replacement.id_, hidden));
@@ -199,7 +201,7 @@ Board::reserveCard(player_id_t pid, const Card& card,
     }
 
     // Ensure that replacement is only needed for table cards:
-    if (!(replacement == NULL_CARD || cardIn(card.id_, cards_))) {
+    if (!(replacement.isNull() || cardIn(card.id_, cards_))) {
         return UNAVAILABLE_CARD;
     }
 
@@ -316,7 +318,7 @@ Board::buyCardFromPile(player_id_t pid, typename Cards::iterator where,
 void
 Board::removeCard(Cards& pile, typename Cards::iterator& where, const Card& replacement)
 {
-    if (replacement == NULL_CARD) {
+    if (replacement.isNull()) {
         pile.erase(where);
     } else {
         *where = replacement;
