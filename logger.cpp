@@ -38,7 +38,7 @@ Logger::~Logger()
 
 /////////////////////////////////////////////////////////////
 void
-grandeur::Logger::log(const Board& board, player_id_t pid, const GameMove& mv)
+Logger::log(const Board& board, player_id_t pid, const GameMove& mv)
 {
     if (pImpl_->firstTime_) {
         assert(mv == NULL_MOVE);

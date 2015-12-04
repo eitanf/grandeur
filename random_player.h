@@ -13,7 +13,7 @@ namespace grandeur {
 class RandomPlayer final : public Player {
   public:
     RandomPlayer(player_id_t pid) : Player(pid) {}
-    virtual GameMove getMove(Board& board, Cards& hidden, const Moves& legal) const;
+    virtual GameMove getMove(const Board& board, const Cards& hidden, const Moves& legal) const;
 };
 
 }  // namespace
