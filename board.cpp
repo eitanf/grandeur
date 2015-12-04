@@ -28,6 +28,7 @@ Board::takeGems(player_id_t pid, const Gems& gems)
     //// First, check for bugs or bad inputs:
     assert(pid < nplayer_);
     assert(totalGameGems() == g_gem_allocation[nplayer_]);
+    assert(playerGems_[pid].totalGems() <= MAX_PLAYER_GEMS);
 
     // Can't take yellows:
     if (gems.getCount(YELLOW) > 0) {

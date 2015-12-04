@@ -104,7 +104,7 @@ addTakeGemMoves(Moves& moves, player_id_t pid, const Board& board)
     }
 
     // Enumerate all legal moves that take gems of different colors (no returns):
-    if (ngems <= MAX_PLAYER_GEMS - SAME_COLOR_GEMS) {
+    if (ngems <= MAX_PLAYER_GEMS - DIFFERENT_COLOR_GEMS) {
         addTakeGemCombination(moves, pid, board, diffColors);
     }
 
