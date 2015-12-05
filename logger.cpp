@@ -38,24 +38,26 @@ Logger::~Logger()
 
 /////////////////////////////////////////////////////////////
 void
-Logger::log(const Board& board, player_id_t pid, const GameMove& mv)
+Logger::log(MoveEvent event, const Board& board, player_id_t pid,
+            const MoveNotifier::Payload& payload)
 {
-    if (pImpl_->firstTime_) {
-        assert(mv == NULL_MOVE);
+    switch(event) {
+    case MoveEvent::GAME_BEGAN:
         pImpl_->ofile_ << "Initial board state:\n" << board << "\n";
-        pImpl_->firstTime_ = false;
-    }
-    else if (mv == NULL_MOVE) {  // Last move
-        pImpl_->ofile_ << "GAME OVER! ";
-        if (pid < board.playersNum()) {
-            pImpl_->ofile_ << "Player " << pid << " wins!\n";
-        } else {
-            pImpl_->ofile_ << "Stalemate!\n";
-        }
-    }
-    else {
-        pImpl_->ofile_ << "Player " << pid << " made move: " << mv << "\n";
+        break;
+    case MoveEvent::MOVE_TAKEN:
+        pImpl_->ofile_ << "Player " << pid << " made move: " << payload.mv_ << "\n";
         pImpl_->ofile_ << "New board state:\n" << board << "\n";
+        break;
+    case MoveEvent::NOBLE_WON:
+        pImpl_->ofile_ << "Player " << pid << " won noble: " << payload.noble_ << "\n";
+        break;
+    case MoveEvent::GAME_WON:
+        pImpl_->ofile_ << "GAME OVER! Player " << pid << " wins!\n";
+        break;
+    case MoveEvent::STALEMATE:
+        pImpl_->ofile_ << "GAME OVER! Stalemate!\n";
+        break;
     }
 }
 

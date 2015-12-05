@@ -30,7 +30,7 @@ static constexpr const gem_count_t g_noble_allocation[] = { -1, -1, 3, 4, 5 };
 // Full set of nobles, from which some will be allocated to board randomly
 static constexpr const Noble g_nobles[] = {
         { { 0, 0, 3, 3, 3 }, 3 },   // 0
-        { { 3, 3, 3, 0, 0 }, 0 },   // 1
+        { { 3, 3, 3, 0, 0 }, 3 },   // 1
         { { 3, 3, 0, 0, 3 }, 3 },   // 2
         { { 0, 3, 3, 3, 0 }, 3 },   // 3
         { { 3, 0, 0, 3, 3 }, 3 },   // 4

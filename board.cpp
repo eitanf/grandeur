@@ -3,6 +3,7 @@
 //
 
 #include "board.h"
+#include "move_notifier.h"
 
 #include <cassert>
 #include <iostream>
@@ -344,6 +345,7 @@ void Board::checkNobles(player_id_t pid)
     for (auto iter = nobles_.begin(); iter != nobles_.end(); ) {
         if (!(playerPrestige_[pid] - iter->cost_).hasNegatives()) {
             playerPoints_[pid] += iter->points_;
+            MoveNotifier::instance().notifyObservers(MoveEvent::NOBLE_WON, *this, pid, *iter);
             iter = nobles_.erase(iter);
         } else {
             ++iter;

@@ -7,6 +7,7 @@
 
 #include "board.h"
 #include "move.h"
+#include "move_notifier.h"
 
 #include <memory>
 #include <string>
@@ -17,7 +18,7 @@ struct Logger {
   public:
     Logger(const std::string& fn);
     ~Logger();
-    void log(const Board& board, player_id_t pid, const GameMove& mv);
+    void log(MoveEvent, const Board&, player_id_t, const MoveNotifier::Payload&);
 
   private:
     struct Impl;

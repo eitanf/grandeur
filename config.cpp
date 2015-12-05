@@ -4,6 +4,7 @@
 
 #include "config.h"
 #include "move.h"
+#include "move_notifier.h"
 
 #include <iostream>
 
@@ -27,8 +28,8 @@ Config::Config(const std::vector<std::string>& args)
             if (++i == args.cend()) die("missing filename");
             loggerPtr_ = new Logger(*i);
             MoveNotifier::instance().registerObserver(
-                [=](const Board& board, player_id_t pid, const GameMove& mv)
-                    { loggerPtr_->log(board, pid, mv); });
+                    [=](MoveEvent event, const Board& board, player_id_t pid, const MoveNotifier::Payload& payload)
+                        { loggerPtr_->log(event, board, pid, payload); });
             continue;
         }
 

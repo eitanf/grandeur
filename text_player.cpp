@@ -4,6 +4,7 @@
 
 #include "text_player.h"
 #include "board.h"
+#include "move_notifier.h"
 
 #include <cassert>
 #include <iostream>
@@ -14,11 +15,13 @@ using namespace std;
 namespace grandeur {
 
 TextPlayer::TextPlayer(player_id_t pid)
-   : Player(pid), firstTime_(true)
+   : Player(pid), os_(cout)
 {
     MoveNotifier::instance().registerObserver(
-            [=](const Board& board, player_id_t pid, const GameMove& mv) {
-                moveUpdater(board, pid, mv);
+            [=](MoveEvent event, const Board& board, player_id_t pid,
+                const MoveNotifier::Payload& payload)
+            {
+                moveUpdater(event, board, pid, payload);
             });
 }
 
@@ -60,27 +63,38 @@ TextPlayer::getMove(const Board& board, const Cards& hidden, const Moves& legal)
 
 /////////////////////////////////////////////////////////////
 void
-TextPlayer::moveUpdater(const Board& board, player_id_t pid, const GameMove& mv)
+TextPlayer::moveUpdater(MoveEvent event, const Board& board, player_id_t pid,
+                        const MoveNotifier::Payload& payload)
 {
-    if (firstTime_) {
-        assert(mv == NULL_MOVE);
-        cout << "Initial board state:\n" << board << "\n";
-        firstTime_ = false;
-    }
-    else if (mv == NULL_MOVE) {  // Last move
-        cout << "GAME OVER! ";
-        if (pid == Player::pid_) {
-            cout << "you won!";
-        } else if (pid < board.playersNum()) {
-            cout << "Player " << pid << " wons!";
-        } else {
-            cout << "Stalemate!";
-        }
-        cout << endl;
-    }
+    switch(event) {
+    case MoveEvent::GAME_BEGAN:
+        os_ << "Initial board state:\n" << board << "\n";
+        break;
 
-    else if (pid != Player::pid_){
-        cout << "Player " << pid << " made move: " << mv << "\n";
+    case MoveEvent::MOVE_TAKEN:
+        if (pid != Player::pid_) {
+            os_ << "Player " << pid << " made move: " << payload.mv_ << "\n";
+        } else {
+            os_ << "New board state:\n" << board << "\n";
+        }
+        break;
+
+    case MoveEvent::NOBLE_WON:
+        os_ << "Player " << pid << " won noble: " << payload.noble_ << "\n";
+        break;
+
+    case MoveEvent::GAME_WON:
+        os_ << "GAME OVER! ";
+        if (pid == Player::pid_) {
+            os_ << "you won!\n";
+        } else {
+            os_ << " Player " << pid << " won!\n";
+        }
+        break;
+
+    case MoveEvent::STALEMATE:
+        os_ << "GAME OVER! Stalemate!\n";
+        break;
     }
 }
 

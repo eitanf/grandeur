@@ -8,6 +8,7 @@
 #include "move.h"
 #include "board.h"
 #include "player.h"
+#include "move_notifier.h"
 
 using namespace std;
 
@@ -236,7 +237,7 @@ mainGameLoop(Board& board, Cards& deck, Players& players)
     Cards hiddenReserves[MAX_NPLAYER];
     MoveStatus ok = LEGAL_MOVE;
 
-    MoveNotifier::instance().notifyObservers(board, 0, NULL_MOVE);
+    MoveNotifier::instance().notifyObservers(MoveEvent::GAME_BEGAN, board, 0);
 
     bool stalemate = false;
     while (!board.gameOver() && !stalemate) {
@@ -270,13 +271,18 @@ mainGameLoop(Board& board, Cards& deck, Players& players)
             }
 
             assert(ok == LEGAL_MOVE);
-            MoveNotifier::instance().notifyObservers(board, pid, pMove);
+            MoveNotifier::instance().notifyObservers(
+                    MoveEvent::MOVE_TAKEN, board, pid, { pMove });
         }
     }
 
     // End of game: find winner:
     const auto winner = board.leadingPlayer();
-    MoveNotifier::instance().notifyObservers(board, winner, NULL_MOVE);
+    if (winner < board.playersNum()) {
+        MoveNotifier::instance().notifyObservers(MoveEvent::GAME_WON, board, winner);
+    } else {
+        MoveNotifier::instance().notifyObservers(MoveEvent::STALEMATE, board, winner);
+    }
     return winner;
 }
 

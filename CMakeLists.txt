@@ -5,6 +5,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 
 set(SOURCE_FILES main.cpp
         constants.h
+        move_notifier.h
         move.cpp move.h
         gems.cpp gems.h
         card.cpp card.h

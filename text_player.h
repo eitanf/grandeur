@@ -6,7 +6,10 @@
 
 #pragma once
 
+#include <ostream>
+
 #include "player.h"
+#include "move_notifier.h"
 
 namespace grandeur {
 
@@ -15,9 +18,10 @@ class TextPlayer final : public Player {
     TextPlayer(player_id_t pid);
     virtual GameMove getMove(const Board& board, const Cards& hidden, const Moves& legal) const;
 
-    void moveUpdater(const Board& board, player_id_t pid, const GameMove& mv);
+    void moveUpdater(MoveEvent event, const Board& board, player_id_t pid,
+                         const MoveNotifier::Payload& payload);
 
-    bool firstTime_;
+    std::ostream& os_;
 };
 
 }  // namespace

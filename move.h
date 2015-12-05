@@ -61,41 +61,6 @@ class Board;
 class Player;
 
 /////////////////////////////////////////////////////
-// MoveNotifier is a singleton that lets interested parties (e.g., players)
-// register to receive notifications for any board changes. They register
-// a callback function that gets the new state of the Board, and if a move was
-// just made, the player who made it and the move.
-// There are two special cases when NULL_MOVE is passed: At the beginning of the
-// game, before any moves were made, and at the end of a game, with the winning
-// player passed as the moving player's pid (or an index too large if stalemate)
-class MoveNotifier {
-  public:
-    using observer_t = std::function<void(const Board&, player_id_t, const GameMove&)>;
-
-    static MoveNotifier& instance()
-    {
-        static MoveNotifier singleton;
-        return singleton;
-    }
-
-    void registerObserver(observer_t observer) { observers_.push_back(observer); }
-
-    void notifyObservers(const Board& board, player_id_t pid, const GameMove& mv)
-    {
-        for (auto obs : observers_) {
-            obs(board, pid, mv);
-        }
-    }
-
-
-  private:
-    std::vector<observer_t> observers_;
-    MoveNotifier() = default;
-    MoveNotifier(const MoveNotifier&) = delete;
-    MoveNotifier& operator=(const MoveNotifier&) = delete;
-};
-
-/////////////////////////////////////////////////////
 // Free functions for game play
 
 // Update the board status in response to game move (one of three types).
