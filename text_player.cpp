@@ -45,18 +45,8 @@ TextPlayer::getMove(const Board& board, const Cards& hidden, const Moves& legal)
         }
     }
 
-    evaluator_t eval = countPoints;
-    vector<Board> newBoards;
-    newBoards.reserve(legal.size());
-    auto myhidden = hidden;
-    for (const auto& m : legal) {
-        Board b(board);
-        if (m.type_ != MoveType::RESERVE_CARD || !m.payload_.card_.isWild()) {
-            makeMove(b, Player::pid_, m, myhidden, NULL_CARD);
-        }
-        newBoards.push_back(b);
-    }
-    auto scores = eval(legal, Player::pid_, board, newBoards, hidden);
+    const auto evaluator = countPoints;
+    const auto scores = computeScores(evaluator, legal, Player::pid_, board, hidden);
 
     cout << "\nList of legal moves available to you:\n";
     int i = 0;

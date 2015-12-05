@@ -36,8 +36,20 @@ using evaluator_t = std::function<Scores(const Moves& moves,
 
 
 // Combine multiple evaluators to one (additive)
+// TODO: Change this into combineEvaluator function, with weights (default ones)
 evaluator_t operator+(const evaluator_t& lhs, const evaluator_t& rhs);
 
+
+// Compute scores for a given board state and evaluation function
+// It'll automatically generate newBoards as necessary.
+Scores computeScores(const evaluator_t eval,
+                     const Moves& moves,
+                     const player_id_t pid,
+                     const Board& curBoard,
+                     const Cards& hidden);
+
+
+////////////////////////////////////////////////////////////////////
 ////////// Declarations for various evaluation functions:
 
 // Sum up the points gained by each move:

@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "eval.h"
+#include "move.h"
 
 using namespace std;
 
@@ -49,6 +50,26 @@ evaluator_t operator+(const evaluator_t& lhs, const evaluator_t& rhs)
 
 
 //////////////////////////////////////////////////////////////
+Scores computeScores(const evaluator_t evaluator, const Moves& moves,
+                     const player_id_t pid, const Board& curBoard,
+                     const Cards& hidden)
+{
+    vector<Board> newBoards;
+    newBoards.reserve(moves.size());
+    auto myhidden = hidden;
+    for (const auto& mv : moves) {
+        Board board(curBoard);
+        if (mv.type_ != MoveType::RESERVE_CARD || !mv.payload_.card_.isWild()) {
+            makeMove(board, pid, mv, myhidden, NULL_CARD);
+        }
+        newBoards.push_back(board);
+    }
+
+    return evaluator(moves, pid, curBoard, newBoards, hidden);
+}
+
+
+//////////////////////////////////////////////////////////////
 /// Evaluation functions
 //////////////////////////////////////////////////////////////
 
@@ -66,6 +87,5 @@ Scores countPoints(const Moves& moves, const player_id_t pid, const Board& board
 }
 
 
-//////////////////////////////////////////////////////////////
 
 } // namespace
