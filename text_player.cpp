@@ -5,6 +5,7 @@
 #include "text_player.h"
 #include "board.h"
 #include "move_notifier.h"
+#include "eval.h"
 
 #include <cassert>
 #include <iostream>
@@ -30,6 +31,7 @@ TextPlayer::TextPlayer(player_id_t pid)
 GameMove
 TextPlayer::getMove(const Board& board, const Cards& hidden, const Moves& legal) const
 {
+
     if (legal.empty()) {
         cout << "You have no legal moves available, skipping your turn...\n";
         return NULL_MOVE;
@@ -43,11 +45,26 @@ TextPlayer::getMove(const Board& board, const Cards& hidden, const Moves& legal)
         }
     }
 
+    evaluator_t eval = countPoints;
+    vector<Board> newBoards;
+    newBoards.reserve(legal.size());
+    auto myhidden = hidden;
+    for (const auto& m : legal) {
+        Board b(board);
+        if (m.type_ != MoveType::RESERVE_CARD || !m.payload_.card_.isWild()) {
+            makeMove(b, Player::pid_, m, myhidden, NULL_CARD);
+        }
+        newBoards.push_back(b);
+    }
+    auto scores = eval(legal, Player::pid_, board, newBoards, hidden);
+
     cout << "\nList of legal moves available to you:\n";
     int i = 0;
     for (auto m : legal) {
         cout << "[" << setw(2) << ++i << "]\t";
-        cout << m << endl;
+        cout << m;
+        cout << "\t(score: " << scores[i - 1] << ")";
+        cout << endl;
     }
 
     cout << "Choose a move # (1-" << legal.size() << ")\n";

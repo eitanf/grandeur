@@ -15,7 +15,7 @@ set(SOURCE_FILES main.cpp
         logger.cpp logger.h
         player.cpp player.h
         random_player.cpp random_player.h
-        text_player.cpp text_player.h)
+        text_player.cpp text_player.h eval.cpp eval.h)
 
 add_executable(grandeur ${SOURCE_FILES})
 
