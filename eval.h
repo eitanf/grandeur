@@ -31,13 +31,14 @@ Scores operator-(const Scores& lhs, const Scores& rhs);
 using evaluator_t = std::function<Scores(const Moves& moves,
                                          const player_id_t pid,
                                          const Board& curBoard,
-                                         std::vector<Board>& newBoards,
+                                         const std::vector<Board>& newBoards,
                                          const Cards& hidden)>;
 
 
-// Combine multiple evaluators to one (additive)
-// TODO: Change this into combineEvaluator function, with weights (default ones)
-evaluator_t operator+(const evaluator_t& lhs, const evaluator_t& rhs);
+// Combine multiple evaluators to one evaluator, each with its own weight.
+// The combined evaluator sums all the weighted evaluators.
+evaluator_t combine(const std::vector<evaluator_t>& evaluators,
+                    const std::vector<score_t>& weights);
 
 
 // Compute scores for a given board state and evaluation function
@@ -52,11 +53,17 @@ Scores computeScores(const evaluator_t eval,
 ////////////////////////////////////////////////////////////////////
 ////////// Declarations for various evaluation functions:
 
-// Sum up the points gained by each move:
-Scores countPoints(const Moves& moves,
-                   const player_id_t pid,
-                   const Board& curBoard,
-                   std::vector<Board>& newBoards,
-                   const Cards& hidden);
+// Sum up the new points gained by each move
+Scores countPoints(const Moves& moves, const player_id_t pid, const Board& curBoard,
+                   const std::vector<Board>& newBoards, const Cards& hidden);
+
+// Sum up the new prestige points (gem discount) gained by each move
+Scores countPrestige(const Moves& moves, const player_id_t pid, const Board& curBoard,
+                     const std::vector<Board>& newBoards, const Cards& hidden);
+
+// Award a point to a move if it leads to a winning board for this player
+Scores winCondition(const Moves& moves, const player_id_t pid, const Board& curBoard,
+                    const std::vector<Board>& newBoards, const Cards& hidden);
+
 
 }  // namespace

@@ -35,17 +35,27 @@ Scores operator-(const Scores& lhs, const Scores& rhs)
     return addScores<std::minus<score_t>>(lhs, rhs);
 }
 
+
 //////////////////////////////////////////////////////////////
-evaluator_t operator+(const evaluator_t& lhs, const evaluator_t& rhs)
+evaluator_t combine(const std::vector<evaluator_t>& evaluators,
+                    const std::vector<score_t>& weights)
 {
-    return ([=](const Moves& moves,
-                const player_id_t pid,
-                const Board& curBoard,
-                std::vector<Board>& newBoards,
-                const Cards& hidden) {
-        return lhs(moves, pid, curBoard, newBoards, hidden) +
-               rhs(moves, pid, curBoard, newBoards, hidden);
-    });
+    assert(evaluators.size() == weights.size());
+    return [=](const Moves& moves,
+        const player_id_t pid,
+        const Board& curBoard,
+        const std::vector<Board>& newBoards,
+        const Cards& hidden)
+    {
+        Scores sums(moves.size(), 0);
+        for (size_t i = 0; i < evaluators.size(); ++i) {
+            auto scores = evaluators[i](moves, pid, curBoard, newBoards, hidden);
+            for (size_t j = 0; j < scores.size(); ++j) {
+                sums[j] += weights[i] * scores[j];
+            }
+        }
+        return sums;
+    };
 }
 
 
@@ -74,7 +84,7 @@ Scores computeScores(const evaluator_t evaluator, const Moves& moves,
 //////////////////////////////////////////////////////////////
 
 Scores countPoints(const Moves& moves, const player_id_t pid, const Board& board,
-                   std::vector<Board>& newBoards, const Cards&)
+                   const std::vector<Board>& newBoards, const Cards&)
 {
     Scores ret;
     assert(moves.size() == newBoards.size());
@@ -86,6 +96,33 @@ Scores countPoints(const Moves& moves, const player_id_t pid, const Board& board
     return ret;
 }
 
+
+//////////////////////////////////////////////////////////////
+Scores countPrestige(const Moves& moves, const player_id_t pid, const Board& board,
+                     const std::vector<Board>& newBoards, const Cards&)
+{
+    Scores ret;
+    ret.reserve(newBoards.size());
+
+    transform(moves.cbegin(), moves.cend(), back_inserter(ret),
+              [=](const GameMove& mv){ return (mv.type_ == MoveType::BUY_CARD)? 1 : 0; });
+    return ret;
+}
+
+
+//////////////////////////////////////////////////////////////
+Scores winCondition(const Moves& moves, const player_id_t pid, const Board& curBoard,
+                    const std::vector<Board>& newBoards, const Cards& hidden)
+{
+
+    Scores ret;
+    ret.reserve(newBoards.size());
+    transform(newBoards.cbegin(), newBoards.cend(), back_inserter(ret),
+              [=](const Board& board) {
+                  return (board.gameOver() && board.leadingPlayer() == pid)? 1 : 0;
+              });
+    return ret;
+}
 
 
 } // namespace
