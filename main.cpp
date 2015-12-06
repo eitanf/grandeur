@@ -18,6 +18,7 @@
 
 
 #include <algorithm>
+#include <iostream>
 #include <string>
 #include <vector>
 
@@ -49,6 +50,15 @@ createBoard(Config& config, Cards& deck)
 }
 
 
+void finalUpdate(MoveEvent event, const Board&, player_id_t pid,
+                 const MoveNotifier::Payload&)
+{
+    if (event == MoveEvent::GAME_WON) {
+        cout << "GAME OVER! Player " << pid << " wins!\n";
+    } else if (event == MoveEvent::STALEMATE) {
+        cout << "GAME OVER! Stalemate!\n";
+    }
+}
 
 }  // namespace
 
@@ -65,6 +75,7 @@ int main(int argc, char** argv)
     Cards deck(begin(g_deck), end(g_deck));
     shuffle(begin(deck), end(deck), config.prng_);
     auto board = createBoard(config, deck);
+    MoveNotifier::instance().registerObserver(finalUpdate);
 
     mainGameLoop(board, deck, config.players_);
 

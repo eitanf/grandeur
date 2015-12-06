@@ -18,12 +18,16 @@ def logfn(logdir, iter):
 
 ###################################
 def run_game(iter, logdir, p0, p1):
-    cmdline = bin + " -s " + str(iter) + " -l " + logfn(logdir, iter) + " " + p0 + " " + p1
-    subprocess.call(cmdline, shell=True)
+    if (logdir == ""):
+        cmdline = bin + " -s " + str(iter) + " " + p0 + " " + p1
+    else:
+        cmdline = bin + " -s " + str(iter) + " -l " + logfn(logdir, iter) + " " + p0 + " " + p1
+    result = subprocess.check_output(cmdline, shell=True)
+    return result;
+
 
 ###################################
-def get_winner(fn):
-    last = subprocess.check_output("tail -1 " + fn, shell=True)
+def get_winner(last):
     m = re.match(r'GAME OVER! Player (\d) wins!', last)
     if m is None:
         m = re.match(r'GAME OVER! Stalemate!', last)
@@ -38,21 +42,22 @@ def get_winner(fn):
 
 ###################################
 ###### Main
-if len(sys.argv) != 5:
-    print("Need four parameters: no. of iterations, directory, and two players")
+if len(sys.argv) != 4:
+    print("Need four parameters: no. of iterations, and two players")
     sys.exit(-1)
 
 niter = int(sys.argv[1])
-logdir = sys.argv[2]
-p0 = sys.argv[3]
-p1 = sys.argv[4]
+p0 = sys.argv[2]
+p1 = sys.argv[3]
 wins = { "P0": 0, "P1": 0, "Tie": 0 }
 
-os.mkdir(logdir)
+logdir = ""
+## os.mkdir(logdir)
 
 for i in range(1, niter + 1):
-    run_game(i, logdir, p0, p1)
-    winner = get_winner(logfn(logdir, i))
+    last = run_game(i, logdir, p0, p1)
+##    last = subprocess.check_output("tail -1 " + logfn(logdir, i), shell=True)
+    winner = get_winner(last)
     wins[winner] = wins[winner] + 1
 
 print(wins)
