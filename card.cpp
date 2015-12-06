@@ -3,6 +3,7 @@
 //
 
 #include <iostream>
+#include <iomanip>
 
 #include "card.h"
 
@@ -26,7 +27,7 @@ std::ostream&
 operator<<(std::ostream& os, const CardID& id)
 {
     static constexpr const char* deckName[3] = {"L", "M", "H"};
-    os << deckName[id.type_] << "," << id.seq_;
+    os << deckName[id.type_] << "," << std::setw(2) << id.seq_;
     return os;
 }
 

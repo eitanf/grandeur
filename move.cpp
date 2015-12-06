@@ -98,6 +98,7 @@ addTakeGemMoves(Moves& moves, player_id_t pid, const Board& board)
     static const vector<gem_count_t> netAddOne1 =  { -1,  0,  0,  0,  2 };
     static const vector<gem_count_t> netAddOne2 =  { -1, -1,  1,  1,  1 };
     static const vector<gem_count_t> netAddTwo1 =  { -1,  0,  1,  1,  1 };
+    static const vector<gem_count_t> netAddTwo2 =  {  0,  0,  0,  1,  1 };
 
     const auto ngems = board.playerGems(pid).totalGems();
 
@@ -126,6 +127,7 @@ addTakeGemMoves(Moves& moves, player_id_t pid, const Board& board)
     // Enumerate all legal moves that take and return gems (net two gems taken):
     if (ngems == MAX_PLAYER_GEMS - 2) {
         addTakeGemCombination(moves, pid, board, netAddTwo1);
+        addTakeGemCombination(moves, pid, board, netAddTwo2);
     }
 }
 

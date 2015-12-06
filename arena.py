@@ -52,7 +52,8 @@ p1 = sys.argv[3]
 wins = { "P0": 0, "P1": 0, "Tie": 0 }
 
 logdir = ""
-## os.mkdir(logdir)
+if (logdir != ""):
+    os.mkdir(logdir)
 
 for i in range(1, niter + 1):
     last = run_game(i, logdir, p0, p1)
