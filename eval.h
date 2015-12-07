@@ -23,6 +23,11 @@ using Scores = std::vector<score_t>;
 
 Scores operator+(const Scores& lhs, const Scores& rhs);
 Scores operator-(const Scores& lhs, const Scores& rhs);
+Scores operator*(score_t scalar, const Scores& scores);
+inline Scores operator*(const Scores& scores, score_t scalar)
+{
+    return scalar * scores;
+}
 
 ///// Interface for an evaluation function.
 // Receives the moves to be scored, the player id making the move, the

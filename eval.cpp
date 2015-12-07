@@ -36,6 +36,15 @@ Scores operator-(const Scores& lhs, const Scores& rhs)
 }
 
 
+Scores operator*(score_t scalar, const Scores& scores)
+{
+    Scores ret;
+    ret.reserve(scores.size());
+    transform(scores.cbegin(), scores.cend(), back_inserter(ret),
+              [=](score_t score){ return score * scalar; });
+    return ret;
+}
+
 //////////////////////////////////////////////////////////////
 evaluator_t combine(const std::vector<evaluator_t>& evaluators,
                     const std::vector<score_t>& weights)
@@ -49,10 +58,7 @@ evaluator_t combine(const std::vector<evaluator_t>& evaluators,
     {
         Scores sums(moves.size(), 0);
         for (size_t i = 0; i < evaluators.size(); ++i) {
-            auto scores = evaluators[i](moves, pid, curBoard, newBoards, hidden);
-            for (size_t j = 0; j < scores.size(); ++j) {
-                sums[j] += weights[i] * scores[j];
-            }
+            sums = sums + weights[i] * evaluators[i](moves, pid, curBoard, newBoards, hidden);
         }
         return sums;
     };

@@ -14,6 +14,7 @@ using namespace std;
 
 namespace grandeur {
 
+///////////////////////////////////////////////////////////////////
 bool GameMove::operator==(const GameMove& rhs) const
 {
     if (type_ != rhs.type_) {
@@ -27,8 +28,10 @@ bool GameMove::operator==(const GameMove& rhs) const
 }
 
 
+///////////////////////////////////////////////////////////////////
 ostream& operator<<(ostream& os, const GameMove& mv)
 {
+    static constexpr const char* dname[] = { "LOW", "MEDIUM", "HIGH" };
     switch (mv.type_) {
     case TAKE_GEMS:
         os << "Take: " << mv.payload_.gems_;
@@ -37,7 +40,12 @@ ostream& operator<<(ostream& os, const GameMove& mv)
         os << "Buy: " << mv.payload_.card_.id_;
         break;
     case RESERVE_CARD:
-        os << "Reserve: " << mv.payload_.card_.id_;
+        os << "Reserve: ";
+        if (mv.payload_.card_.isWild()) {
+            os << "Wildcard from deck " << dname[mv.payload_.card_.id_.type_];
+        } else {
+            os << mv.payload_.card_.id_;
+        }
         break;
     }
 
@@ -45,6 +53,7 @@ ostream& operator<<(ostream& os, const GameMove& mv)
 }
 
 
+///////////////////////////////////////////////////////////////////
 // Test whether a combination of gems we're trying to take are too many gems for
 // the given table gems
 bool
@@ -69,6 +78,7 @@ isLegalTake(const Gems& takeGems, const Gems& tableGems, const Gems& myGems)
 }
 
 
+///////////////////////////////////////////////////////////////////
 // For a given vector of gem-count combinations, search all permutation of this
 // combination to find legal gem-taking permutations, and add them to moves.
 // A gem-count combination is an ascending-sorted array of five counts, representing
@@ -86,6 +96,7 @@ addTakeGemCombination(Moves& moves, player_id_t pid, const Board& board,
 
 }
 
+///////////////////////////////////////////////////////////////////
 // Enumerate all possible combinations of taking gems that match the amount
 // of gems player already has.
 static void
@@ -132,6 +143,7 @@ addTakeGemMoves(Moves& moves, player_id_t pid, const Board& board)
 }
 
 
+///////////////////////////////////////////////////////////////////
 // Enumerate all the cards (table/reserves) we can afford to buy:
 static void
 addBuyCardMoves(Moves& moves, player_id_t pid, const Board& board, const Cards& myhidden)
@@ -155,6 +167,7 @@ addBuyCardMoves(Moves& moves, player_id_t pid, const Board& board, const Cards& 
 }
 
 
+///////////////////////////////////////////////////////////////////
 // Enumerate all the cards that can be reserved:
 static void
 addReserveCardMoves(Moves& moves, player_id_t pid, const Board& board, const Cards& myhidden)
@@ -183,6 +196,7 @@ addReserveCardMoves(Moves& moves, player_id_t pid, const Board& board, const Car
 }
 
 
+///////////////////////////////////////////////////////////////////
 // Accumulate legal moves of all four types:
 Moves
 legalMoves(const Board& board, player_id_t pid, const Cards& myHidden)
@@ -197,6 +211,7 @@ legalMoves(const Board& board, player_id_t pid, const Cards& myHidden)
 }
 
 
+///////////////////////////////////////////////////////////////////
 // Evaluate a move on a throwaway board to check its legality:
 MoveStatus
 isLegalMove(Board board, player_id_t pid, const GameMove& move, Cards hidden)
@@ -205,6 +220,8 @@ isLegalMove(Board board, player_id_t pid, const GameMove& move, Cards hidden)
 }
 
 
+///////////////////////////////////////////////////////////////////
+// Execute a given move on a given board
 MoveStatus
 makeMove(Board& board, player_id_t pid, const GameMove& mymove,
          Cards& myhidden, const Card& replacement)
@@ -231,49 +248,65 @@ makeMove(Board& board, player_id_t pid, const GameMove& mymove,
     return status;
 }
 
+///////////////////////////////////////////////////////////////////
+// Chose a move for a given player, find replacement card if necessary,
+// and execute the move.
+static MoveStatus
+playerMove(Board& board, player_id_t pid, Cards& hidden, Cards& deck,
+           const Player* player, const Moves& legal)
+{
+    if (legal.empty()) {
+        return LEGAL_MOVE;
+    }
 
+    auto pMove = player->getMove(board, hidden, legal);
+
+    // Find replacement card if buying/reserving from table:
+    Card replacement = NULL_CARD;
+    Card payloadCard = pMove.payload_.card_;
+
+
+    switch (pMove.type_) {
+    case TAKE_GEMS: break;    // No need to replace any cards
+    case RESERVE_CARD:
+        if (payloadCard.isWild()) {
+            payloadCard = popFromDeck(payloadCard.id_.type_, deck);
+            assert(!payloadCard.isNull());
+        }
+        // Fall through to next case:
+    case BUY_CARD:
+        if (cardIn(pMove.payload_.card_.id_, board.tableCards())) {
+            replacement = popFromDeck(payloadCard.id_.type_, deck);
+        }
+        break;
+    }
+
+    const GameMove newMove = (pMove.type_ == TAKE_GEMS)?
+                             pMove :
+                             GameMove(payloadCard, pMove.type_);
+
+    MoveStatus status = makeMove(board, pid, newMove, hidden, replacement);
+    assert(status == LEGAL_MOVE);
+    MoveNotifier::instance().notifyObservers(
+            MoveEvent::MOVE_TAKEN, board, pid, { pMove });
+
+    return status;
+}
+
+
+///////////////////////////////////////////////////////////////////
 // TODO: Bypass mode that skips all the error checks in make move, if a move is forced to be legal.
 player_id_t
 mainGameLoop(Board& board, Cards& deck, Players& players)
 {
     Cards hiddenReserves[MAX_NPLAYER];
-    MoveStatus ok = LEGAL_MOVE;
-
     MoveNotifier::instance().notifyObservers(MoveEvent::GAME_BEGAN, board, 0);
 
     while (!board.gameOver()) {
-
+        board.newRound();
         for (player_id_t pid = 0; pid < board.playersNum(); ++pid) {
-            if (pid == 0) {
-                board.newRound();
-            }
             const auto legal = legalMoves(board, pid, hiddenReserves[pid]);
-            if (legal.empty()) {
-                continue;
-            }
-
-            auto pMove = players[pid]->getMove(board, hiddenReserves[pid], legal);
-
-            // Find replacement card if buying/reserving from table:
-            Card replacement = NULL_CARD;
-            if (pMove.type_ != MoveType::TAKE_GEMS
-             && cardIn(pMove.payload_.card_.id_, board.tableCards())) {
-                replacement = popFromDeck(pMove.payload_.card_.id_.type_, deck);
-            }
-
-            // find first available card if reserving from undealt cards:
-            if (pMove.type_ == MoveType::RESERVE_CARD && pMove.payload_.card_.isWild()) {
-                auto card = popFromDeck(pMove.payload_.card_.id_.type_, deck);
-                assert(!card.isNull());
-                auto newMove = GameMove(card, pMove.type_);
-                ok = makeMove(board, pid, newMove, hiddenReserves[pid], replacement);
-            } else {
-                ok = makeMove(board, pid, pMove, hiddenReserves[pid], replacement);
-            }
-
-            assert(ok == LEGAL_MOVE);
-            MoveNotifier::instance().notifyObservers(
-                    MoveEvent::MOVE_TAKEN, board, pid, { pMove });
+            playerMove(board, pid, hiddenReserves[pid], deck, players[pid], legal);
         }
     }
 
