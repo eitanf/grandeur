@@ -30,6 +30,9 @@ static constexpr auto MIN_SAME_COLOR_TABLE_GEMS = SAME_COLOR_GEMS + 2;
 // We have three types of decks, based on their typical prestige point value
 static constexpr unsigned NDECKS = 3;
 
+// Stop games after this many moves (probably stuck with no progress moves)
+static constexpr unsigned MAX_GAME_ROUNDS = 100;
+
 // The prestige point value of a card or noble, which is accumulated toward winning.
 using points_t = unsigned;
 

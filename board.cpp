@@ -17,7 +17,7 @@ Board::Board(unsigned nplayer, const Cards& initialCards, const Nobles& initialN
   : nplayer_(nplayer), cards_(initialCards), nobles_(initialNobles), purchased_(),
     tableGems_(g_gem_allocation[nplayer]), playerGems_(nplayer),
     playerPrestige_(nplayer), playerReserves_(nplayer), playerPoints_(nplayer),
-    remainingCards_(), round_(1)
+    remainingCards_(), round_(0)
 {
     remainingCards_[LOW] = deckCount(LOW, g_deck) - deckCount(LOW, cards_);
     remainingCards_[MEDIUM] = deckCount(MEDIUM, g_deck) - deckCount(MEDIUM, cards_);
@@ -238,7 +238,8 @@ bool
 Board::gameOver() const
 {
     return (*max_element(begin(playerPoints_), end(playerPoints_)) >= MIN_WIN_POINTS
-         || cards_.empty());
+         || cards_.empty()
+         || round_ > MAX_GAME_ROUNDS);
 }
 
 

@@ -43,7 +43,7 @@ class Board {
     MoveStatus reserveCard(player_id_t pid, const Card& card, Cards& hidden,
                            const Card& replacement = NULL_CARD);
 
-    void completedRound() { ++round_; }  // Signal a full  round completed.
+    void newRound() { ++round_; }  // Signal a full  round completed.
 
          //////////// Accessor functions:
 

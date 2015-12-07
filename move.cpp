@@ -241,28 +241,18 @@ mainGameLoop(Board& board, Cards& deck, Players& players)
 
     MoveNotifier::instance().notifyObservers(MoveEvent::GAME_BEGAN, board, 0);
 
-    bool stalemate = false;
-    int noBuyCount = 0;  // Have many turns have we gone without any BUY_CARD?
-    static const auto MAX_NO_BUY_ROUNDS = 30;
-
-    while (!board.gameOver() && !stalemate) {
+    while (!board.gameOver()) {
 
         for (player_id_t pid = 0; pid < board.playersNum(); ++pid) {
-            stalemate = true;
-            ++noBuyCount;
+            if (pid == 0) {
+                board.newRound();
+            }
             const auto legal = legalMoves(board, pid, hiddenReserves[pid]);
             if (legal.empty()) {
                 continue;
-            } else {
-              if (noBuyCount < MAX_NO_BUY_ROUNDS) {
-                  stalemate = false;
-              }
             }
 
             auto pMove = players[pid]->getMove(board, hiddenReserves[pid], legal);
-            if (pMove.type_ == MoveType::BUY_CARD) {
-                noBuyCount = 0;
-            }
 
             // Find replacement card if buying/reserving from table:
             Card replacement = NULL_CARD;
@@ -284,9 +274,6 @@ mainGameLoop(Board& board, Cards& deck, Players& players)
             assert(ok == LEGAL_MOVE);
             MoveNotifier::instance().notifyObservers(
                     MoveEvent::MOVE_TAKEN, board, pid, { pMove });
-            if (pid == board.playersNum() - 1) {
-                board.completedRound();
-            }
         }
     }
 
