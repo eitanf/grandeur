@@ -43,7 +43,9 @@ class Board {
     MoveStatus reserveCard(player_id_t pid, const Card& card, Cards& hidden,
                            const Card& replacement = NULL_CARD);
 
-    //////////// Accessor functions:
+    void completedRound() { ++round_; }  // Signal a full  round completed.
+
+         //////////// Accessor functions:
 
     const player_id_t playersNum() const { return nplayer_; }
 
@@ -60,6 +62,9 @@ class Board {
     unsigned remainingCards(unsigned deck) const;
 
     const Nobles& tableNobles() const { return nobles_; }
+
+    // How many rounds has this game played for so far?
+    unsigned roundNumber() const { return round_; }
 
     // Which player has the most prestige points?
     // If no single player leads, returns a number larger than no. of players
@@ -90,6 +95,7 @@ class Board {
     std::vector<points_t> playerPoints_;   // How many points each player has.
     std::vector<Cards> playerReserves_;  // Which visible cards each players has reserved
     unsigned remainingCards_[NDECKS];  // How many cards remain of each deck type.
+    unsigned round_;  // No. of game rounds, starting from one.
 
     void checkNobles(player_id_t pid);
 };

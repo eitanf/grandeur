@@ -12,17 +12,20 @@ using namespace std;
 
 namespace grandeur {
 
+//////////////////////////////////////////////////////////////////////////////////////
 Board::Board(unsigned nplayer, const Cards& initialCards, const Nobles& initialNobles)
   : nplayer_(nplayer), cards_(initialCards), nobles_(initialNobles), purchased_(),
     tableGems_(g_gem_allocation[nplayer]), playerGems_(nplayer),
     playerPrestige_(nplayer), playerReserves_(nplayer), playerPoints_(nplayer),
-    remainingCards_()
+    remainingCards_(), round_(1)
 {
     remainingCards_[LOW] = deckCount(LOW, g_deck) - deckCount(LOW, cards_);
     remainingCards_[MEDIUM] = deckCount(MEDIUM, g_deck) - deckCount(MEDIUM, cards_);
     remainingCards_[HIGH] = deckCount(HIGH, g_deck) - deckCount(HIGH, cards_);
 }
 
+
+//////////////////////////////////////////////////////////////////////////////////////
 MoveStatus
 Board::takeGems(player_id_t pid, const Gems& gems)
 {
@@ -87,7 +90,7 @@ Board::takeGems(player_id_t pid, const Gems& gems)
     return LEGAL_MOVE;
 }
 
-
+//////////////////////////////////////////////////////////////////////////////////////
 // Removes noble if won.
 // Also removes card from visible cards or reserves, if found.
 // If in deck and replacment isn't NULL_CARD, adds replacement to cards_.
@@ -149,6 +152,7 @@ Board::buyCard(player_id_t pid, CardID cid, Cards& hidden, const Card& replaceme
 }
 
 
+//////////////////////////////////////////////////////////////////////////////////////
 // Checks that the player hasn't exceed allowed reservations, and that
 // enough yellow coins exist.
 // If card not found board, add it to hidden.
@@ -227,6 +231,7 @@ Board::reserveCard(player_id_t pid, const Card& card,
 }
 
 
+//////////////////////////////////////////////////////////////////////////////////////
 // A game is over when a player reached MIN_WIN_POINTS or when all table cards
 // have been exhuasted
 bool
@@ -237,6 +242,7 @@ Board::gameOver() const
 }
 
 
+//////////////////////////////////////////////////////////////////////////////////////
 // Which player has the most prestige points?
 player_id_t
 Board::leadingPlayer() const
@@ -255,6 +261,7 @@ Board::leadingPlayer() const
 }
 
 
+//////////////////////////////////////////////////////////////////////////////////////
 const Cards&
 Board::tableCards() const
 {
@@ -263,6 +270,7 @@ Board::tableCards() const
 }
 
 
+//////////////////////////////////////////////////////////////////////////////////////
 const Cards&
 Board::playerReserves(player_id_t pid) const
 {
@@ -271,6 +279,7 @@ Board::playerReserves(player_id_t pid) const
 }
 
 
+//////////////////////////////////////////////////////////////////////////////////////
 const Gems&
 Board::tableGems() const
 {
@@ -280,6 +289,7 @@ Board::tableGems() const
 }
 
 
+//////////////////////////////////////////////////////////////////////////////////////
 const Gems&
 Board::playerGems(player_id_t pid) const
 {
@@ -289,6 +299,7 @@ Board::playerGems(player_id_t pid) const
 }
 
 
+//////////////////////////////////////////////////////////////////////////////////////
 unsigned
 Board::remainingCards(unsigned deck) const
 {
@@ -297,6 +308,7 @@ Board::remainingCards(unsigned deck) const
 }
 
 
+//////////////////////////////////////////////////////////////////////////////////////
 // buyCardsFromPile does the actual bookkeeping, once we've identified where we're buying
 // the card from (table cards, reserves, etc.). We still have to check for adequate gems.
 MoveStatus
@@ -326,6 +338,7 @@ Board::buyCardFromPile(player_id_t pid, typename Cards::iterator where,
     return LEGAL_MOVE;
 }
 
+//////////////////////////////////////////////////////////////////////////////////////
 // Update pile and remainingCards_ after a table card has been purchased or reserved
 void
 Board::removeCard(Cards& pile, typename Cards::iterator& where, const Card& replacement)
@@ -340,7 +353,9 @@ Board::removeCard(Cards& pile, typename Cards::iterator& where, const Card& repl
 }
 
 
-void Board::checkNobles(player_id_t pid)
+//////////////////////////////////////////////////////////////////////////////////////
+void
+Board::checkNobles(player_id_t pid)
 {
     for (auto iter = nobles_.begin(); iter != nobles_.end(); ) {
         if (!(playerPrestige_[pid] - iter->cost_).hasNegatives()) {
@@ -355,6 +370,8 @@ void Board::checkNobles(player_id_t pid)
 
 }
 
+
+//////////////////////////////////////////////////////////////////////////////////////
 // Sum up all the gems of all players + table. Should be constant.
 const Gems
 Board::totalGameGems() const
@@ -367,7 +384,9 @@ Board::totalGameGems() const
 }
 
 
-std::ostream& operator<<(std::ostream& os, const Board& board)
+//////////////////////////////////////////////////////////////////////////////////////
+std::ostream&
+operator<<(std::ostream& os, const Board& board)
 {
     os << "Available gems: " << board.tableGems() << "\n";
 

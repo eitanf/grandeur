@@ -47,7 +47,8 @@ Logger::log(MoveEvent event, const Board& board, player_id_t pid,
         break;
     case MoveEvent::MOVE_TAKEN:
         pImpl_->ofile_ << "Player " << pid << " made move: " << payload.mv_ << "\n";
-        pImpl_->ofile_ << "New board state:\n" << board << "\n";
+        pImpl_->ofile_ << "New board state for round " << board.roundNumber()
+                       << ":\n" << board << "\n";
         break;
     case MoveEvent::NOBLE_WON:
         pImpl_->ofile_ << "Player " << pid << " won noble: " << payload.noble_ << "\n";
