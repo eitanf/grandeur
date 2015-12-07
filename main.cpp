@@ -55,7 +55,7 @@ void finalUpdate(MoveEvent event, const Board&, player_id_t pid,
 {
     if (event == MoveEvent::GAME_WON) {
         cout << "GAME OVER! Player " << pid << " wins!\n";
-    } else if (event == MoveEvent::STALEMATE) {
+    } else if (event == MoveEvent::TIE) {
         cout << "GAME OVER! Stalemate!\n";
     }
 }

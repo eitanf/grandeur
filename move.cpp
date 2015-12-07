@@ -295,7 +295,7 @@ mainGameLoop(Board& board, Cards& deck, Players& players)
     if (winner < board.playersNum()) {
         MoveNotifier::instance().notifyObservers(MoveEvent::GAME_WON, board, winner);
     } else {
-        MoveNotifier::instance().notifyObservers(MoveEvent::STALEMATE, board, winner);
+        MoveNotifier::instance().notifyObservers(MoveEvent::TIE, board, winner);
     }
     return winner;
 }

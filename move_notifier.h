@@ -21,7 +21,7 @@ enum class MoveEvent { GAME_BEGAN = 0,  // Start a game
                        MOVE_TAKEN,      // A game move was made
                        NOBLE_WON,       // A noble was won
                        GAME_WON,        // The game ended with a player winning
-                       STALEMATE        // The game ended with nobody winning
+                       TIE              // The game ended with nobody winning
 };
 
 

@@ -56,7 +56,7 @@ Logger::log(MoveEvent event, const Board& board, player_id_t pid,
     case MoveEvent::GAME_WON:
         pImpl_->ofile_ << "GAME OVER! Player " << pid << " wins!\n";
         break;
-    case MoveEvent::STALEMATE:
+    case MoveEvent::TIE:
         pImpl_->ofile_ << "GAME OVER! Stalemate!\n";
         break;
     }
