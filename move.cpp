@@ -52,26 +52,20 @@ ostream& operator<<(ostream& os, const GameMove& mv)
     return os;
 }
 
+using Counts = array<gem_count_t, 5>;
 
 ///////////////////////////////////////////////////////////////////
 // Test whether a combination of gems we're trying to take are too many gems for
 // the given table gems
-bool
-isLegalTake(const Gems& takeGems, const Gems& tableGems, const Gems& myGems)
+bool inline
+isLegalTake(const Counts& take, const Counts& table, const Counts& mine)
 {
-    // Are we taking more gems than the table has?
-    if ((tableGems - takeGems).hasNegatives()) {
-        return false;
-    }
-    // Are we returning more gems than we have?
-    if ((myGems + takeGems).hasNegatives()) {
-        return false;
-    }
-    // Are we taking too many gems of the same color?
-    const auto maxcl = takeGems.maxColor();
-    if (takeGems.getCount(maxcl) == SAME_COLOR_GEMS
-            && tableGems.getCount(maxcl) < MIN_SAME_COLOR_TABLE_GEMS) {
-        return false;
+    for (auto i = 0; i < Gems::NCOLOR - 1; ++i) {
+        if ((take[i] > table[i])
+        ||  (mine[i] + take[i] < 0)
+        ||  (take[i] == SAME_COLOR_GEMS & table[i] < MIN_SAME_COLOR_TABLE_GEMS)) {
+            return false;
+        }
     }
 
     return true;
@@ -85,12 +79,11 @@ isLegalTake(const Gems& takeGems, const Gems& tableGems, const Gems& myGems)
 // How many gems of each colors to take (where the actual colors vary by permutation).
 static void
 addTakeGemCombination(Moves& moves, player_id_t pid, const Board& board,
-                      vector<gem_count_t> counts)
+                      Counts counts, const Counts& table, const Counts& mine)
 {
     do {
-        const Gems trygems = Gems(begin(counts), end(counts));
-        if (isLegalTake(trygems, board.tableGems(), board.playerGems(pid))) {
-            moves.push_back(GameMove(trygems));
+        if (isLegalTake(counts, table, mine)) {
+            moves.push_back(GameMove(Gems(begin(counts), end(counts))));
         }
     } while (next_permutation(begin(counts), end(counts)));
 
@@ -102,43 +95,56 @@ addTakeGemCombination(Moves& moves, player_id_t pid, const Board& board,
 static void
 addTakeGemMoves(Moves& moves, player_id_t pid, const Board& board)
 {
-    static const vector<gem_count_t> sameColor =   {  0,  0,  0,  0,  2 };
-    static const vector<gem_count_t> diffColors =  {  0,  0,  1,  1,  1 };
-    static const vector<gem_count_t> netAddZero1 = { -2,  0,  0,  0,  2 };
-    static const vector<gem_count_t> netAddZero2 = { -1, -1,  0,  1,  1 };
-    static const vector<gem_count_t> netAddOne1 =  { -1,  0,  0,  0,  2 };
-    static const vector<gem_count_t> netAddOne2 =  { -1, -1,  1,  1,  1 };
-    static const vector<gem_count_t> netAddTwo1 =  { -1,  0,  1,  1,  1 };
-    static const vector<gem_count_t> netAddTwo2 =  {  0,  0,  0,  1,  1 };
+    static const Counts sameColor =   {  0,  0,  0,  0,  2 };
+    static const Counts diffColors =  {  0,  0,  1,  1,  1 };
+    static const Counts netAddZero1 = { -2,  0,  0,  0,  2 };
+    static const Counts netAddZero2 = { -1, -1,  0,  1,  1 };
+    static const Counts netAddOne1 =  { -1,  0,  0,  0,  2 };
+    static const Counts netAddOne2 =  { -1, -1,  1,  1,  1 };
+    static const Counts netAddTwo1 =  { -1,  0,  1,  1,  1 };
+    static const Counts netAddTwo2 =  {  0,  0,  0,  1,  1 };
+
+    const Counts table({ board.tableGems().getCount(gem_color_t(0)),
+                         board.tableGems().getCount(gem_color_t(1)),
+                         board.tableGems().getCount(gem_color_t(2)),
+                         board.tableGems().getCount(gem_color_t(3)),
+                         board.tableGems().getCount(gem_color_t(4))
+                       });
+    const Counts mine({ board.playerGems(pid).getCount(gem_color_t(0)),
+                        board.playerGems(pid).getCount(gem_color_t(1)),
+                        board.playerGems(pid).getCount(gem_color_t(2)),
+                        board.playerGems(pid).getCount(gem_color_t(3)),
+                        board.playerGems(pid).getCount(gem_color_t(4))
+                      });
 
     const auto ngems = board.playerGems(pid).totalGems();
 
     // Enumerate all legal moves that take gems of a single color:
     if (ngems <= MAX_PLAYER_GEMS - SAME_COLOR_GEMS) {
-        addTakeGemCombination(moves, pid, board, sameColor);
+        addTakeGemCombination(moves, pid, board, sameColor, table, mine);
     }
 
     // Enumerate all legal moves that take gems of different colors (no returns):
     if (ngems <= MAX_PLAYER_GEMS - DIFFERENT_COLOR_GEMS) {
-        addTakeGemCombination(moves, pid, board, diffColors);
+        addTakeGemCombination(moves, pid, board, diffColors, table, mine);
     }
 
     // Enumerate all legal moves that take and return gems (net zero change):
-    if (ngems == MAX_PLAYER_GEMS) {
-        addTakeGemCombination(moves, pid, board, netAddZero1);
-        addTakeGemCombination(moves, pid, board, netAddZero2);
+    else if (ngems == MAX_PLAYER_GEMS) {
+        addTakeGemCombination(moves, pid, board, netAddZero1, table, mine);
+        addTakeGemCombination(moves, pid, board, netAddZero2, table, mine);
     }
 
     // Enumerate all legal moves that take and return gems (net one gem taken):
-    if (ngems == MAX_PLAYER_GEMS - 1) {
-        addTakeGemCombination(moves, pid, board, netAddOne1);
-        addTakeGemCombination(moves, pid, board, netAddOne2);
+    else if (ngems == MAX_PLAYER_GEMS - 1) {
+        addTakeGemCombination(moves, pid, board, netAddOne1, table, mine);
+        addTakeGemCombination(moves, pid, board, netAddOne2, table, mine);
     }
 
     // Enumerate all legal moves that take and return gems (net two gems taken):
-    if (ngems == MAX_PLAYER_GEMS - 2) {
-        addTakeGemCombination(moves, pid, board, netAddTwo1);
-        addTakeGemCombination(moves, pid, board, netAddTwo2);
+    else if (ngems == MAX_PLAYER_GEMS - 2) {
+        addTakeGemCombination(moves, pid, board, netAddTwo1, table, mine);
+        addTakeGemCombination(moves, pid, board, netAddTwo2, table, mine);
     }
 }
 
