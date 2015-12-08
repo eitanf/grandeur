@@ -3,20 +3,19 @@
 //
 
 #include "random_player.h"
+#include "config.h"
 
-#include <cstdlib>
 #include <random>
 
 namespace grandeur {
 
+extern Config* g_config;
+
 GameMove
 RandomPlayer::getMove(const Board&, const Cards&, const Moves& legal) const
 {
-    static const char* seedstr = std::getenv("GRANDEUR_PLAYER_SEED");
-    static std::mt19937_64 generator(seedstr? std::atoll(seedstr) : 1ULL);
-
     std::uniform_int_distribution<> dist(0, legal.size() - 1);
-    return legal.at(dist(generator));
+    return legal.at(dist(g_config->prng_));
 }
 
 static PlayerFactory::Registrator registrator("random",

@@ -26,7 +26,7 @@ using namespace std;
 
 namespace grandeur {
 
-
+Config* g_config;
 
 /////////////////////////////////////////////////////////////
 // Shuffle cards and nobles to create randomized game Board
@@ -50,6 +50,7 @@ createBoard(Config& config, Cards& deck)
 }
 
 
+/////////////////////////////////////////////////////////////
 void finalUpdate(MoveEvent event, const Board&, player_id_t pid,
                  const MoveNotifier::Payload&)
 {
@@ -68,16 +69,16 @@ int main(int argc, char** argv)
 {
     using namespace grandeur;
 
-
-    Config config(vector<string>(argv + 1, argv + argc));
+    g_config = new Config(vector<string>(argv + 1, argv + argc));
 
     // Create shuffled card deck:
     Cards deck(begin(g_deck), end(g_deck));
-    shuffle(begin(deck), end(deck), config.prng_);
-    auto board = createBoard(config, deck);
+    shuffle(begin(deck), end(deck), g_config->prng_);
+    auto board = createBoard(*g_config, deck);
     MoveNotifier::instance().registerObserver(finalUpdate);
 
-    mainGameLoop(board, deck, config.players_);
+    mainGameLoop(board, deck, g_config->players_);
 
+    delete g_config;
     return 0;
 }
