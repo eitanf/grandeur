@@ -16,14 +16,11 @@ GreedyPlayer::getMove(const Board& board, const Cards& hidden, const Moves& lega
     return legal.at(idx);
 }
 
-static PlayerFactory::Registrator reg1("greedy-pts",
-                  [](player_id_t pid){ return new GreedyPlayer(countPoints, pid); });
-
 static const auto comboEval =
         combine({ winCondition, countPoints, countPrestige },
                 { 100,          2,           1 } );
 
-static PlayerFactory::Registrator reg2("greedy-combo",
+static PlayerFactory::Registrator reg2("greedy",
                   [](player_id_t pid){ return new GreedyPlayer(comboEval, pid); });
 
 

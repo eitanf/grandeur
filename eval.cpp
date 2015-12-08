@@ -66,22 +66,28 @@ evaluator_t combine(const std::vector<evaluator_t>& evaluators,
 
 
 //////////////////////////////////////////////////////////////
-Scores computeScores(const evaluator_t evaluator, const Moves& moves,
-                     const player_id_t pid, const Board& curBoard,
-                     const Cards& hidden)
+Scores computeScores(const evaluator_t evaluator, const Moves& moves, const player_id_t pid,
+                     const Board& curBoard, const Cards& hidden,
+                     vector<Board>* newBoards, vector<Moves>* newMoves)
 {
-    vector<Board> newBoards;
-    newBoards.reserve(moves.size());
+    auto nb = vector<Board>();
+    auto nm = vector<Moves>();
+    nb.reserve(moves.size());
+    nm.reserve(moves.size());
     auto myhidden = hidden;
+
     for (const auto& mv : moves) {
         Board board(curBoard);
         if (mv.type_ != MoveType::RESERVE_CARD || !mv.payload_.card_.isWild()) {
             makeMove(board, pid, mv, myhidden, NULL_CARD);
         }
-        newBoards.push_back(board);
+        nb.push_back(board);
+        nm.push_back(legalMoves(board, pid, hidden));
     }
 
-    return evaluator(moves, pid, curBoard, newBoards, hidden);
+    if (newBoards)   *newBoards = nb;
+    if (newMoves)    *newMoves = nm;
+    return evaluator(moves, pid, curBoard, nb, hidden);
 }
 
 

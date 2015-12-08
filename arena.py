@@ -51,7 +51,7 @@ p0 = sys.argv[2]
 p1 = sys.argv[3]
 wins = { "P0": 0, "P1": 0, "Tie": 0 }
 
-logdir = ""
+logdir = "logs"
 if (logdir != ""):
     os.mkdir(logdir)
 

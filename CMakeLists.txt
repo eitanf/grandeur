@@ -16,6 +16,7 @@ set(SOURCE_FILES main.cpp
         player.cpp player.h
         random_player.cpp random_player.h
         greedy_player.cpp greedy_player.h
+        minimax_player.cpp minimax_player.h
         text_player.cpp text_player.h
         eval.cpp eval.h)
 

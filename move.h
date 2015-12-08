@@ -42,8 +42,8 @@ struct GameMove {
 
     MoveType type_;
     union payload {
-        const Gems gems_;   // In case of TAKE_GEMS
-        const Card card_;  // Otherwise
+        Gems gems_;   // In case of TAKE_GEMS
+        Card card_;  // Otherwise
         constexpr payload(const Gems& gems) : gems_(gems) {};
         constexpr payload(const Card& card) : card_(card) {};
     } payload_;
