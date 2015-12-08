@@ -291,10 +291,20 @@ playerMove(Board& board, player_id_t pid, Cards& hidden, Cards& deck,
                              pMove :
                              GameMove(payloadCard, pMove.type_);
 
+    const auto nobles = board.tableNobles();
     MoveStatus status = makeMove(board, pid, newMove, hidden, replacement);
     assert(status == LEGAL_MOVE);
+
     MoveNotifier::instance().notifyObservers(
             MoveEvent::MOVE_TAKEN, board, pid, { pMove });
+    if (board.tableNobles() != nobles) {
+        for (auto n : nobles) {
+            if (board.tableNobles().cend() ==
+                    find(board.tableNobles().cbegin(), board.tableNobles().cend(), n)) {
+                MoveNotifier::instance().notifyObservers(MoveEvent::NOBLE_WON, board, pid, n);
+            }
+        }
+    }
 
     return status;
 }

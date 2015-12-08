@@ -51,7 +51,7 @@ Logger::log(MoveEvent event, const Board& board, player_id_t pid,
                        << ":\n" << board << "\n";
         break;
     case MoveEvent::NOBLE_WON:
-        pImpl_->ofile_ << "Player " << pid << " won noble: " << payload.noble_ << "\n";
+        pImpl_->ofile_ << "Player " << pid << " won noble: " << payload.noble_ << "!\n\n";
         break;
     case MoveEvent::GAME_WON:
         pImpl_->ofile_ << "GAME OVER! Player " << pid << " wins!\n";

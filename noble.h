@@ -22,6 +22,11 @@ struct Noble {
     points_t points_;
 };
 
+static bool operator==(const Noble& lhs, const Noble& rhs)
+{
+    return lhs.cost_ == rhs.cost_;
+}
+
 std::ostream& operator<<(std::ostream&, const Noble&);
 
 // Mapping from no. of players to no. of nobles initially allocated to board:
