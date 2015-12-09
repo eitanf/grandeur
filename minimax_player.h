@@ -19,11 +19,12 @@ class MinimaxPlayer final : public Player {
   public:
     MinimaxPlayer(unsigned maxDepth, const evaluator_t& eval, player_id_t pid);
 
-    virtual GameMove getMove(const Board& board, const Cards& hidden, const Moves& legal) const;
+    virtual GameMove
+    getMove(const Board& board, const Cards& hidden, const Moves& legal) const;
 
   private:
     std::pair<unsigned, score_t>
-    bestMoveN(unsigned depth, const Board& board, const Cards& hidden, const Moves& legal) const;
+    bestMoveN(player_id_t, unsigned, const Board&, const Cards&, const Cards&, const Moves&) const;
 
     unsigned depth_;
     evaluator_t evaluator_;

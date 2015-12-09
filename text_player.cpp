@@ -47,7 +47,8 @@ TextPlayer::getMove(const Board& board, const Cards& hidden, const Moves& legal)
 
     const auto evaluator = combine({ winCondition, countPoints, countPrestige },
                                    { 100,          2,           1 } );
-    const auto scores = computeScores(evaluator, legal, Player::pid_, board, hidden);
+    vector<Board> newBoards;
+    const auto scores = computeScores(evaluator, legal, Player::pid_, board, hidden, newBoards);
 
     cout << "\nList of legal moves available to you:\n";
     int i = 0;

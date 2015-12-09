@@ -25,30 +25,35 @@ GameMove
 MinimaxPlayer::getMove(const Board& board, const Cards& hidden, const Moves& legal) const
 {
     assert(board.playersNum() == 2 && "Minimax only defined for two players");
-    const auto bestMove = bestMoveN(depth_, board, hidden, legal).first;
+    const Cards opponentHidden = {};
+    const auto bestMove = bestMoveN(Player::pid_, depth_, board,
+                                    hidden, opponentHidden, legal).first;
     return legal.at(bestMove);
 }
 
 //////////////////////////////////////////////////////////////////////////////////
 // The first element of the return value is the index of the best move.
-// The second element of the return value is the cummulative score of the best move.
+// The second element of the return value is the cumulative score of the best move.
 std::pair<unsigned, score_t>
-MinimaxPlayer::bestMoveN(unsigned depth,
-                          const Board& board,
-                          const Cards& hidden,
-                          const Moves& legal) const
+MinimaxPlayer::bestMoveN(player_id_t pid,          // The player making the current move
+                         unsigned depth,           // Depth of recursion (how many more turns)
+                         const Board& board,       // Current board state
+                         const Cards& hidden,      // Hidden cards of active player
+                         const Cards& opHidden,    // Hidden cards of oppononet
+                         const Moves& legal) const // List of current legal movees
 {
     vector<Board> newBoards;
-    vector<Moves> newMoves;
     assert(!legal.empty());
 
-    auto scores = computeScores(evaluator_, legal, Player::pid_, board, hidden,
-                                &newBoards, &newMoves);
+    auto scores = computeScores(evaluator_, legal, pid, board, hidden, newBoards);
 
     if (depth > 1) {
         for (unsigned i = 0; i < legal.size(); ++i) {
-            if (!newMoves[i].empty()) {
-                const auto best = bestMoveN(depth - 1, newBoards[i], hidden, newMoves[i]);
+            // Swap out pid and hidden for opponent:
+            const auto opMoves = legalMoves(newBoards[i], 1 - pid, opHidden);
+            if (!opMoves.empty()) {
+                const auto best = bestMoveN(1 - pid, depth - 1, newBoards[i],
+                                            opHidden, hidden, opMoves);
                 scores[i] -= best.second;
             }
         }
