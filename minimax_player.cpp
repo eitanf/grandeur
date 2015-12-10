@@ -6,6 +6,7 @@
 
 #include <cassert>
 #include <vector>
+#include <iostream>
 
 using namespace std;
 
@@ -25,6 +26,7 @@ GameMove
 MinimaxPlayer::getMove(const Board& board, const Cards& hidden, const Moves& legal) const
 {
     assert(board.playersNum() == 2 && "Minimax only defined for two players");
+//    cerr << "Starting minimax, round: " << board.roundNumber() << "\n";
     const Cards opponentHidden = {};
     const auto bestMove = bestMoveN(Player::pid_, depth_, board,
                                     hidden, opponentHidden, legal).first;
@@ -45,8 +47,14 @@ MinimaxPlayer::bestMoveN(player_id_t pid,          // The player making the curr
     vector<Board> newBoards;
     assert(!legal.empty());
 
-    auto scores = computeScores(evaluator_, legal, pid, board, hidden, newBoards);
-
+    auto scores = depth * computeScores(evaluator_, legal, pid, board, hidden, newBoards);
+/*
+    for (int i = depth_; i > depth; --i)  cerr << "\t";
+    cerr << "Moves for player: " << pid << " depth: " << depth << "\n";
+    for (int i = 0; i < scores.size(); ++i) {
+        cerr << "Move: " << legal[i] << " has a score of: " << scores[i] << "\n";
+    }
+*/
     if (depth > 1) {
         for (unsigned i = 0; i < legal.size(); ++i) {
             // Swap out pid and hidden for opponent:
@@ -60,6 +68,7 @@ MinimaxPlayer::bestMoveN(player_id_t pid,          // The player making the curr
     }
 
     const auto idx = distance(scores.cbegin(), max_element(scores.cbegin(), scores.cend()));
+//    cerr << "Player " << pid << " Picked move: " << legal[idx] << " with score: " << scores[idx] << "\n\n";
     return { idx, scores.at(idx) };
 }
 
