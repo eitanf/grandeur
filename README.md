@@ -17,7 +17,7 @@ The only dependency you'll need to install is TBB from Intel (available for many
 Once TBB is installed you can use the included CMakeLists.txt with cmake. Or you could just run:
 
 ```
-g++ -std=c++14 -O3 -o grandeur *.cpp -ltbb
+g++ -std=c++14 -Wall -O3 -o grandeur *.cpp -ltbb
 ```
 
 

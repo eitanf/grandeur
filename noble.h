@@ -22,10 +22,7 @@ struct Noble {
     points_t points_;
 };
 
-static bool operator==(const Noble& lhs, const Noble& rhs)
-{
-    return lhs.cost_ == rhs.cost_;
-}
+bool operator==(const Noble& lhs, const Noble& rhs);
 
 std::ostream& operator<<(std::ostream&, const Noble&);
 

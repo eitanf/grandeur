@@ -9,6 +9,12 @@
 
 namespace grandeur {
 
+bool
+operator==(const Noble& lhs, const Noble& rhs)
+{
+    return lhs.cost_ == rhs.cost_;
+}
+
 
 std::ostream&
 operator<<(std::ostream& os, const Noble& noble)

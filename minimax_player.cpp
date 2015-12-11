@@ -16,7 +16,7 @@ namespace grandeur {
 
 //////////////////////////////////////////////////////////////////////////////////
 MinimaxPlayer::MinimaxPlayer(unsigned maxDepth, const evaluator_t& eval, player_id_t pid)
-        : depth_(maxDepth), evaluator_(eval), Player(pid)
+        : Player(pid), depth_(maxDepth), evaluator_(eval)
 {
     assert(maxDepth > 0 && "Minimum depth is one turn");
 }

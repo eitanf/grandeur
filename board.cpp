@@ -13,9 +13,9 @@ namespace grandeur {
 
 //////////////////////////////////////////////////////////////////////////////////////
 Board::Board(unsigned nplayer, const Cards& initialCards, const Nobles& initialNobles)
-  : nplayer_(nplayer), cards_(initialCards), nobles_(initialNobles), purchased_(),
+  : nplayer_(nplayer), cards_(initialCards), purchased_(), nobles_(initialNobles),
     tableGems_(g_gem_allocation[nplayer]), playerGems_(nplayer),
-    playerPrestige_(nplayer), playerReserves_(nplayer), playerPoints_(nplayer),
+    playerPrestige_(nplayer), playerPoints_(nplayer), playerReserves_(nplayer),
     remainingCards_(), round_(0)
 {
     remainingCards_[LOW] = deckCount(LOW, g_deck) - deckCount(LOW, cards_);
@@ -29,7 +29,7 @@ MoveStatus
 Board::takeGems(player_id_t pid, const Gems& gems)
 {
     //// First, check for bugs or bad inputs:
-    assert(pid < nplayer_);
+    assert(pid < player_id_t(nplayer_));
     assert(totalGameGems() == g_gem_allocation[nplayer_]);
     assert(playerGems_[pid].totalGems() <= MAX_PLAYER_GEMS);
 
@@ -97,7 +97,7 @@ MoveStatus
 Board::buyCard(player_id_t pid, CardID cid, Cards& hidden, const Card& replacement)
 {
     ///// First, check for bad programmatic inputs (bugs):
-    assert(pid < nplayer_);
+    assert(pid < player_id_t(nplayer_));
     assert(totalGameGems() == g_gem_allocation[nplayer_]);
 
     // Ensure that any replacement card comes from non-empty deck:
@@ -115,7 +115,7 @@ Board::buyCard(player_id_t pid, CardID cid, Cards& hidden, const Card& replaceme
     assert(!cardIn(replacement.id_, cards_));
     assert(!cardIn(replacement.id_, purchased_));
     assert(!cardIn(replacement.id_, hidden));
-    for (size_t i = 0; i < nplayer_; ++i) {
+    for (auto i = 0; i < nplayer_; ++i) {
         assert(!cardIn(replacement.id_, playerReserves_[i]));
     }
 
@@ -160,7 +160,7 @@ Board::reserveCard(player_id_t pid, const Card& card,
                    Cards& hidden, const Card& replacement)
 {
     ///// First, check for bad programmatic inputs (bugs):
-    assert(pid < nplayer_);
+    assert(pid < player_id_t(nplayer_));
     assert(totalGameGems() == g_gem_allocation[nplayer_]);
     assert(!card.isNull());
     assert(!card.isWild());
@@ -173,7 +173,7 @@ Board::reserveCard(player_id_t pid, const Card& card,
     assert(!cardIn(replacement.id_, cards_));
     assert(!cardIn(replacement.id_, purchased_));
     assert(!cardIn(replacement.id_, hidden));
-    for (size_t i = 0; i < nplayer_; ++i) {
+    for (auto i = 0; i < nplayer_; ++i) {
         assert(!cardIn(replacement.id_, playerReserves_[i]));
     }
 
@@ -199,7 +199,7 @@ Board::reserveCard(player_id_t pid, const Card& card,
     if (cardIn(card.id_, purchased_) || cardIn(card.id_, hidden)) {
         return UNAVAILABLE_CARD;
     }
-    for (size_t i = 0; i < nplayer_; ++i) {
+    for (auto i = 0; i < nplayer_; ++i) {
         if (cardIn(card.id_, playerReserves_[i])) {
             return UNAVAILABLE_CARD;
         }
@@ -248,8 +248,8 @@ player_id_t
 Board::leadingPlayer() const
 {
     player_id_t which = 0;
-    gem_count_t maxs = playerPoints_[which];
-    for (auto i = which + 1; i < nplayer_; ++i) {
+    auto maxs = playerPoints_[which];
+    for (int i = which + 1; i < nplayer_; ++i) {
         if (playerPoints_[i] > maxs) {
             which = i;
             maxs = playerPoints_[i];
@@ -316,7 +316,7 @@ Board::buyCardFromPile(player_id_t pid, typename Cards::iterator where,
                        Cards& pile, const Card& replacement)
 {
     assert(where->cost_.getCount(YELLOW) == 0);
-    assert(pid < nplayer_);
+    assert(pid < player_id_t(nplayer_));
 
     // Compute how many gems we'll have left after the purchase, complement from yellows
     // as necessary.
@@ -376,7 +376,7 @@ const Gems
 Board::totalGameGems() const
 {
     Gems ret = tableGems();
-    for (unsigned i = 0; i < nplayer_; ++i) {
+    for (auto i = 0; i < nplayer_; ++i) {
         ret += playerGems(i);
     }
     return ret;

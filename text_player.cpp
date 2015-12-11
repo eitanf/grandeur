@@ -60,7 +60,7 @@ TextPlayer::getMove(const Board& board, const Cards& hidden, const Moves& legal)
     }
 
     cout << "Choose a move # (1-" << legal.size() << ")\n";
-    int idx;
+    unsigned idx;
     while (!(cin >> idx) || idx < 1 || idx > legal.size()) {
         cin.clear();
         cin.ignore(numeric_limits<streamsize>::max(), '\n');

@@ -43,7 +43,7 @@ Gems Gems::actualCost(const Gems& cost) const
     assert(cost.gems_[YELLOW] == 0 && "Can't require a target with yellow");
     Gems ret;
 
-    for (int color = 0; color < NCOLOR - 1; ++color) {
+    for (unsigned color = 0; color < NCOLOR - 1; ++color) {
         const auto positiveCost = std::max(cost.gems_[color], gem_count_t(0));
         ret.gems_[color] = std::min(gems_[color], positiveCost);
         ret.gems_[YELLOW] += std::max(0, positiveCost - gems_[color]);

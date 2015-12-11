@@ -60,10 +60,10 @@ using Counts = array<gem_count_t, 5>;
 bool inline
 isLegalTake(const Counts& take, const Counts& table, const Counts& mine)
 {
-    for (auto i = 0; i < Gems::NCOLOR - 1; ++i) {
+    for (unsigned i = 0; i < Gems::NCOLOR - 1; ++i) {
         if ((take[i] > table[i])
         ||  (mine[i] + take[i] < 0)
-        ||  (take[i] == SAME_COLOR_GEMS & table[i] < MIN_SAME_COLOR_TABLE_GEMS)) {
+        ||  (take[i] == SAME_COLOR_GEMS && table[i] < MIN_SAME_COLOR_TABLE_GEMS)) {
             return false;
         }
     }
@@ -232,7 +232,7 @@ MoveStatus
 makeMove(Board& board, player_id_t pid, const GameMove& mymove,
          Cards& myhidden, const Card& replacement)
 {
-    MoveStatus status;
+    MoveStatus status = LEGAL_MOVE;
 
     switch (mymove.type_) {
     case MoveType::TAKE_GEMS:

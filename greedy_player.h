@@ -14,7 +14,7 @@ namespace grandeur {
 class GreedyPlayer final : public Player {
   public:
     GreedyPlayer(const evaluator_t& eval, player_id_t pid)
-            : evaluator_(eval), Player(pid)
+            : Player(pid), evaluator_(eval)
     {}
 
     virtual GameMove getMove(const Board& board, const Cards& hidden, const Moves& legal) const;

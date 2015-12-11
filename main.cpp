@@ -37,7 +37,7 @@ createBoard(Config& config, Cards& deck)
     // Copy initial 12 cards to initial and remove from deck
     Cards initialCards;
     for (int dt = LOW; dt <= HIGH; ++dt) {
-            for (int i = 0; i < INITIAL_DECK_NCARD; ++i) {
+            for (unsigned i = 0; i < INITIAL_DECK_NCARD; ++i) {
                 initialCards.push_back(popFromDeck(deck_t(dt), deck));
             }
     }
