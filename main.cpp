@@ -16,6 +16,7 @@
 #include "config.h"
 #include "board.h"
 
+#include <tbb/task_scheduler_init.h>
 
 #include <algorithm>
 #include <iostream>
@@ -70,6 +71,7 @@ int main(int argc, char** argv)
     using namespace grandeur;
 
     g_config = new Config(vector<string>(argv + 1, argv + argc));
+    tbb::task_scheduler_init init;
 
     // Create shuffled card deck:
     Cards deck(begin(g_deck), end(g_deck));

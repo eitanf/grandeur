@@ -4,8 +4,9 @@
 
 #include "minimax_player.h"
 
+#include <tbb/parallel_for.h>
+
 #include <cassert>
-#include <vector>
 #include <iostream>
 
 using namespace std;
@@ -26,10 +27,8 @@ GameMove
 MinimaxPlayer::getMove(const Board& board, const Cards& hidden, const Moves& legal) const
 {
     assert(board.playersNum() == 2 && "Minimax only defined for two players");
-//    cerr << "Starting minimax, round: " << board.roundNumber() << "\n";
-    const Cards opponentHidden = {};
     const auto bestMove = bestMoveN(Player::pid_, depth_, board,
-                                    hidden, opponentHidden, legal).first;
+                                    hidden, {}, legal).first;
     return legal.at(bestMove);
 }
 
@@ -48,27 +47,20 @@ MinimaxPlayer::bestMoveN(player_id_t pid,          // The player making the curr
     assert(!legal.empty());
 
     auto scores = depth * computeScores(evaluator_, legal, pid, board, hidden, newBoards);
-/*
-    for (int i = depth_; i > depth; --i)  cerr << "\t";
-    cerr << "Moves for player: " << pid << " depth: " << depth << "\n";
-    for (int i = 0; i < scores.size(); ++i) {
-        cerr << "Move: " << legal[i] << " has a score of: " << scores[i] << "\n";
-    }
-*/
     if (depth > 1) {
-        for (unsigned i = 0; i < legal.size(); ++i) {
+        tbb::parallel_for(0, int(legal.size()), 1, [&](auto idx)
+        {
             // Swap out pid and hidden for opponent:
-            const auto opMoves = legalMoves(newBoards[i], 1 - pid, opHidden);
+            const auto opMoves = legalMoves(newBoards[idx], 1 - pid, opHidden);
             if (!opMoves.empty()) {
-                const auto best = bestMoveN(1 - pid, depth - 1, newBoards[i],
-                                            opHidden, hidden, opMoves);
-                scores[i] -= best.second;
+                const auto best = this->bestMoveN(1 - pid, depth - 1, newBoards[idx],
+                                                  opHidden, hidden, opMoves);
+                scores[idx] -= best.second;
             }
-        }
+        });
     }
 
     const auto idx = distance(scores.cbegin(), max_element(scores.cbegin(), scores.cend()));
-//    cerr << "Player " << pid << " Picked move: " << legal[idx] << " with score: " << scores[idx] << "\n\n";
     return { idx, scores.at(idx) };
 }
 
@@ -90,13 +82,5 @@ static PlayerFactory::Registrator reg5("minimax-5",
                   [](player_id_t pid){ return new MinimaxPlayer(5, comboEval, pid); });
 static PlayerFactory::Registrator reg6("minimax-6",
                   [](player_id_t pid){ return new MinimaxPlayer(6, comboEval, pid); });
-static PlayerFactory::Registrator reg7("minimax-7",
-                  [](player_id_t pid){ return new MinimaxPlayer(7, comboEval, pid); });
-static PlayerFactory::Registrator reg8("minimax-8",
-                  [](player_id_t pid){ return new MinimaxPlayer(8, comboEval, pid); });
-static PlayerFactory::Registrator reg9("minimax-9",
-                  [](player_id_t pid){ return new MinimaxPlayer(9, comboEval, pid); });
-static PlayerFactory::Registrator reg10("minimax-10",
-                  [](player_id_t pid){ return new MinimaxPlayer(10, comboEval, pid); });
 
 } // namespace

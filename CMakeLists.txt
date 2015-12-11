@@ -22,4 +22,6 @@ set(SOURCE_FILES main.cpp
 
 add_executable(grandeur ${SOURCE_FILES})
 
+target_link_libraries(grandeur tbb)
+
 add_subdirectory(tests)
