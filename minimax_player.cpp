@@ -25,11 +25,10 @@ MinimaxPlayer::MinimaxPlayer(unsigned maxDepth, const evaluator_t& eval, player_
 
 //////////////////////////////////////////////////////////////////////////////////
 GameMove
-MinimaxPlayer::getMove(const Board& board, const Cards& hidden, const Moves& legal) const
+MinimaxPlayer::getMove(const Board& board, const Moves& legal) const
 {
     assert(board.playersNum() == 2 && "Minimax only defined for two players");
-    const auto bestMove = bestMoveN(Player::pid_, depth_, board,
-                                    hidden, {}, legal).first;
+    const auto bestMove = bestMoveN(Player::pid_, depth_, board, legal).first;
     return legal.at(bestMove);
 }
 
@@ -40,30 +39,29 @@ std::pair<unsigned, score_t>
 MinimaxPlayer::bestMoveN(player_id_t pid,          // The player making the current move
                          unsigned depth,           // Depth of recursion (how many more turns)
                          const Board& board,       // Current board state
-                         const Cards& hidden,      // Hidden cards of active player
-                         const Cards& opHidden,    // Hidden cards of oppononet
                          const Moves& legal) const // List of current legal movees
 {
     vector<Board> newBoards;
     assert(!legal.empty());
 
     auto scores = depth * agingWeight_ *
-            computeScores(evaluator_, legal, pid, board, hidden, newBoards);
+            computeScores(evaluator_, legal, pid, board, newBoards);
     if (depth > 1) {
         tbb::parallel_for(0, int(legal.size()), 1, [&](auto idx)
+//sequential        for (unsigned idx = 0; idx < legal.size(); ++idx)
         {
             if (pid == 0) {
                 newBoards[idx].newRound();
             }
 
-            // Swap out pid and hidden for opponent:
-            const auto opMoves = legalMoves(newBoards[idx], 1 - pid, opHidden);
+            // Swap out pid for opponent:
+            const auto opMoves = legalMoves(newBoards[idx], 1 - pid);
             if (!opMoves.empty()) {
-                const auto best = this->bestMoveN(1 - pid, depth - 1, newBoards[idx],
-                                                  opHidden, hidden, opMoves);
+                const auto best = this->bestMoveN(1 - pid, depth - 1, newBoards[idx], opMoves);
                 scores[idx] -= best.second;
             }
-        });
+        }
+        );
     }
 
     const auto idx = distance(scores.cbegin(), max_element(scores.cbegin(), scores.cend()));
@@ -91,10 +89,14 @@ static PlayerFactory::Registrator reg6("minimax-6",
 
 static const auto allEval =
         combine({ winCondition, countPoints, countPrestige, countGems, countMoves, monopolizeGems, preferWildcards, countReturns, preferShortGame },
-                { 100,          2,           1,             -10,       10,         50,             1,               -5,           20 });
+                { 100,          2,           1,             -10,       0,         0,             0,               0,           0 });
 
 
-static PlayerFactory::Registrator reg__("special-4",
-                                       [](player_id_t pid){ return new MinimaxPlayer(4, allEval, pid, 0.01); });
+static PlayerFactory::Registrator regs3("special-3",
+                                       [](player_id_t pid){ return new MinimaxPlayer(3, allEval, pid, 0.01); });
+
+static PlayerFactory::Registrator regs4("special-4",
+                                        [](player_id_t pid){ return new MinimaxPlayer(4, allEval, pid, 0.01); });
+
 
 } // namespace

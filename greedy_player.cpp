@@ -9,10 +9,10 @@
 namespace grandeur {
 
 GameMove
-GreedyPlayer::getMove(const Board& board, const Cards& hidden, const Moves& legal) const
+GreedyPlayer::getMove(const Board& board, const Moves& legal) const
 {
     std::vector<Board> newBoards;
-    const auto scores = computeScores(evaluator_, legal, Player::pid_, board, hidden, newBoards);
+    const auto scores = computeScores(evaluator_, legal, Player::pid_, board, newBoards);
     const auto idx = distance(scores.cbegin(), max_element(scores.cbegin(), scores.cend()));
     return legal.at(idx);
 }

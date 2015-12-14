@@ -29,7 +29,7 @@ TextPlayer::TextPlayer(player_id_t pid)
 
 /////////////////////////////////////////////////////////////
 GameMove
-TextPlayer::getMove(const Board& board, const Cards& hidden, const Moves& legal) const
+TextPlayer::getMove(const Board& board, const Moves& legal) const
 {
 
     if (legal.empty()) {
@@ -38,9 +38,9 @@ TextPlayer::getMove(const Board& board, const Cards& hidden, const Moves& legal)
     }
 
     cout << "\nYour turn! Board state:\n" << board;
-    if (!hidden.empty()) {
+    if (!board.playerHidden(Player::pid_).empty()) {
         cout << "Hidden reserve cards:\n";
-        for (auto& c : hidden) {
+        for (auto& c : board.playerHidden(Player::pid_)) {
             cout << c << "\n";
         }
     }
@@ -48,7 +48,7 @@ TextPlayer::getMove(const Board& board, const Cards& hidden, const Moves& legal)
     const auto evaluator = combine({ winCondition, countPoints, countPrestige },
                                    { 100,          2,           1 } );
     vector<Board> newBoards;
-    const auto scores = computeScores(evaluator, legal, Player::pid_, board, hidden, newBoards);
+    const auto scores = computeScores(evaluator, legal, Player::pid_, board, newBoards);
 
     cout << "\nList of legal moves available to you:\n";
     int i = 0;

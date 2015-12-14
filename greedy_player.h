@@ -17,7 +17,7 @@ class GreedyPlayer final : public Player {
             : Player(pid), evaluator_(eval)
     {}
 
-    virtual GameMove getMove(const Board& board, const Cards& hidden, const Moves& legal) const;
+    virtual GameMove getMove(const Board& board, const Moves& legal) const;
 
   private:
     evaluator_t evaluator_;

@@ -13,8 +13,8 @@ using namespace grandeur;
 using namespace std;
 
 #define TAKE(p, gems) EXPECT_EQ(LEGAL_MOVE, board_.takeGems(p, gems))
-#define BUY(p, card, rep) EXPECT_EQ(LEGAL_MOVE, board_.buyCard(p, card.id_, hidden_[p], rep))
-#define RESERVE(p, card, rep) EXPECT_EQ(LEGAL_MOVE, board_.reserveCard(p, card, hidden_[p],  rep))
+#define BUY(p, card, rep) EXPECT_EQ(LEGAL_MOVE, board_.buyCard(p, card.id_, rep))
+#define RESERVE(p, card, rep) EXPECT_EQ(LEGAL_MOVE, board_.reserveCard(p, card,  rep))
 
 // utility: find the score of a specific move:
 score_t scoreOf(const Scores& scores, const Moves& legal, GameMove m)
@@ -34,7 +34,6 @@ class LateGameBoard : public ::testing::Test {
     Cards initial_;
     Board::Nobles nobles_;
     Board board_;
-    Cards hidden_[nplayer_];
     Moves moves1_; // Moves for player 1
 };
 
@@ -42,8 +41,7 @@ LateGameBoard::LateGameBoard() : initial_({g_deck[0], g_deck[3], g_deck[4], g_de
                                            g_deck[40], g_deck[41], g_deck[42], g_deck[43],
                                            g_deck[70], g_deck[71], g_deck[72], g_deck[73] }),
                                  nobles_({ g_nobles[5], g_nobles[6], g_nobles[7], g_nobles[8] }),
-                                 board_(nplayer_, initial_, nobles_),
-                                 hidden_()
+                                 board_(nplayer_, initial_, nobles_)
 {
     // Make some game moves (6 rounds):
     TAKE(0, Gems({ 0, 2, 0, 0, 0 }));
@@ -102,7 +100,7 @@ LateGameBoard::LateGameBoard() : initial_({g_deck[0], g_deck[3], g_deck[4], g_de
     BUY(1, g_deck[65], NULL_CARD);
     // Player one on the verge of winning now with 14 points
 
-    moves1_ = legalMoves(board_, 1, hidden_[1]);
+    moves1_ = legalMoves(board_, 1);
 }
 
 
@@ -110,8 +108,8 @@ Scores
 LateGameBoard::playerScores(player_id_t pid, evaluator_t eval) const
 {
     vector<Board> dummy;
-    const auto moves = legalMoves(board_, pid, hidden_[pid]);
-    const auto scores = computeScores(eval, moves, pid, board_, hidden_[pid], dummy);
+    const auto moves = legalMoves(board_, pid);
+    const auto scores = computeScores(eval, moves, pid, board_, dummy);
     return scores;
 }
 
@@ -163,7 +161,7 @@ TEST_F(LateGameBoard, countGems)
 {
     for (player_id_t pid = 0; pid < nplayer_; ++pid) {
         const score_t curGems = board_.playerGems(pid).totalGems();
-        const auto moves = legalMoves(board_, pid, hidden_[pid]);
+        const auto moves = legalMoves(board_, pid);
         const auto scores = playerScores(pid, countGems);
 
         for (unsigned i = 0; i < moves.size(); ++i) {
@@ -191,7 +189,7 @@ TEST_F(LateGameBoard, countGems)
 TEST_F(LateGameBoard, countMoves)
 {
     for (player_id_t pid = 0; pid < nplayer_; ++pid) {
-        const auto moves = legalMoves(board_, pid, hidden_[pid]);
+        const auto moves = legalMoves(board_, pid);
         const auto scores = playerScores(pid, countMoves);
         EXPECT_TRUE(all_of(scores.cbegin(), scores.cend(), [=](auto s)
         {
@@ -218,7 +216,7 @@ TEST_F(LateGameBoard, monopolizeGems)
 TEST_F(LateGameBoard, preferWildcards)
 {
     for (player_id_t pid = 0; pid < nplayer_; ++pid) {
-        const auto moves = legalMoves(board_, pid, hidden_[pid]);
+        const auto moves = legalMoves(board_, pid);
         const auto scores = playerScores(pid, preferWildcards);
 
         for (unsigned i = 0; i < moves.size(); ++i) {
@@ -237,7 +235,7 @@ TEST_F(LateGameBoard, countReturns)
 {
     TAKE(0, Gems({ 2, 0, 0, 0, 0 }));
     TAKE(0, Gems({ 0, 2, 0, 0, 0 }));
-    const auto moves = legalMoves(board_, 0, hidden_[0]);
+    const auto moves = legalMoves(board_, 0);
     const auto scores = playerScores(0, countReturns);
 
     for (unsigned i = 0; i < moves.size(); ++i) {

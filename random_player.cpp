@@ -12,7 +12,7 @@ namespace grandeur {
 extern Config* g_config;
 
 GameMove
-RandomPlayer::getMove(const Board&, const Cards&, const Moves& legal) const
+RandomPlayer::getMove(const Board&, const Moves& legal) const
 {
     std::uniform_int_distribution<> dist(0, legal.size() - 1);
     return legal.at(dist(g_config->prng_));

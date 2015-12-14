@@ -16,7 +16,7 @@ Board::Board(unsigned nplayer, const Cards& initialCards, const Nobles& initialN
   : nplayer_(nplayer), cards_(initialCards), purchased_(), nobles_(initialNobles),
     tableGems_(g_gem_allocation[nplayer]), playerGems_(nplayer),
     playerPrestige_(nplayer), playerPoints_(nplayer), playerReserves_(nplayer),
-    remainingCards_(), round_(0)
+    playerHidden_(nplayer), remainingCards_(), round_(0)
 {
     remainingCards_[LOW] = deckCount(LOW, g_deck) - deckCount(LOW, cards_);
     remainingCards_[MEDIUM] = deckCount(MEDIUM, g_deck) - deckCount(MEDIUM, cards_);
@@ -94,7 +94,7 @@ Board::takeGems(player_id_t pid, const Gems& gems)
 // Also removes card from visible cards or reserves, if found.
 // If in deck and replacment isn't NULL_CARD, adds replacement to cards_.
 MoveStatus
-Board::buyCard(player_id_t pid, CardID cid, Cards& hidden, const Card& replacement)
+Board::buyCard(player_id_t pid, CardID cid, const Card& replacement)
 {
     ///// First, check for bad programmatic inputs (bugs):
     assert(pid < player_id_t(nplayer_));
@@ -107,14 +107,15 @@ Board::buyCard(player_id_t pid, CardID cid, Cards& hidden, const Card& replaceme
     assert(replacement.isNull() || cardIn(cid, cards_));
 
     // Ensure that buying a card from reserves means no replacement card:
-    assert((!cardIn(cid, hidden) && !cardIn(cid, playerReserves_[pid])) ||
-           (replacement.isNull()));
+    assert((!cardIn(cid, playerHidden_[pid])
+         && !cardIn(cid, playerReserves_[pid]))
+           || replacement.isNull());
 
     // Ensure replacement is legitimate (not previously seen):
     assert(!replacement.isWild());
     assert(!cardIn(replacement.id_, cards_));
     assert(!cardIn(replacement.id_, purchased_));
-    assert(!cardIn(replacement.id_, hidden));
+    assert(!cardIn(replacement.id_, playerHidden_[pid]));
     for (auto i = 0; i < nplayer_; ++i) {
         assert(!cardIn(replacement.id_, playerReserves_[i]));
     }
@@ -141,9 +142,9 @@ Board::buyCard(player_id_t pid, CardID cid, Cards& hidden, const Card& replaceme
         return (buyCardFromPile(pid, where, playerReserves_[pid], replacement));
     }
 
-    where = cardLocation(cid, hidden);
-    if (where != end(hidden)) {
-        return (buyCardFromPile(pid, where, hidden, replacement));
+    where = cardLocation(cid, playerHidden_[pid]);
+    if (where != end(playerHidden_[pid])) {
+        return (buyCardFromPile(pid, where, playerHidden_[pid], replacement));
     }
 
     // Couldn't find cid in any eligible pile, so it's a bad input.
@@ -156,8 +157,7 @@ Board::buyCard(player_id_t pid, CardID cid, Cards& hidden, const Card& replaceme
 // enough yellow coins exist.
 // If card not found board, add it to hidden.
 MoveStatus
-Board::reserveCard(player_id_t pid, const Card& card,
-                   Cards& hidden, const Card& replacement)
+Board::reserveCard(player_id_t pid, const Card& card, const Card& replacement)
 {
     ///// First, check for bad programmatic inputs (bugs):
     assert(pid < player_id_t(nplayer_));
@@ -171,14 +171,14 @@ Board::reserveCard(player_id_t pid, const Card& card,
     assert(!replacement.isWild());
     assert(!cardIn(replacement.id_, cards_));
     assert(!cardIn(replacement.id_, purchased_));
-    assert(!cardIn(replacement.id_, hidden));
+    assert(!cardIn(replacement.id_, playerHidden_[pid]));
     for (auto i = 0; i < nplayer_; ++i) {
         assert(!cardIn(replacement.id_, playerReserves_[i]));
     }
 
     ///// Next, check for bad user inputs:
     // Can't reserve too many cards:
-    if (hidden.size() + playerReserves_[pid].size() >= MAX_PLAYER_RESERVES) {
+    if (playerHidden_[pid].size() + playerReserves_[pid].size() >= MAX_PLAYER_RESERVES) {
         return TOO_MANY_RESERVES;
     }
 
@@ -195,7 +195,7 @@ Board::reserveCard(player_id_t pid, const Card& card,
     }
 
     // Ensure card hasn't been purchased or reserved before:
-    if (cardIn(card.id_, purchased_) || cardIn(card.id_, hidden)) {
+    if (cardIn(card.id_, purchased_) || cardIn(card.id_, playerHidden_[pid])) {
         return UNAVAILABLE_CARD;
     }
     for (auto i = 0; i < nplayer_; ++i) {
@@ -214,7 +214,7 @@ Board::reserveCard(player_id_t pid, const Card& card,
     auto where = cardLocation(card.id_, cards_);
 
     if (where == end(cards_)) {  // An unseen card:
-        hidden.push_back(card);
+        playerHidden_[pid].push_back(card);
         assert(remainingCards_[card.id_.type_] > 0);
         --remainingCards_[card.id_.type_];
     }
@@ -307,6 +307,7 @@ Board::remainingCards(unsigned deck) const
 }
 
 
+//////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////
 // buyCardsFromPile does the actual bookkeeping, once we've identified where we're buying
 // the card from (table cards, reserves, etc.). We still have to check for adequate gems.

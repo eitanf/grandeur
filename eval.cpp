@@ -58,12 +58,11 @@ combine(const std::vector<evaluator_t>& evaluators, const std::vector<score_t>& 
     return [=](const Moves& moves,
         const player_id_t pid,
         const Board& curBoard,
-        const std::vector<Board>& newBoards,
-        const Cards& hidden)
+        const std::vector<Board>& newBoards)
     {
         Scores sums(moves.size(), 0);
         for (size_t i = 0; i < evaluators.size(); ++i) {
-            sums = sums + weights[i] * evaluators[i](moves, pid, curBoard, newBoards, hidden);
+            sums = sums + weights[i] * evaluators[i](moves, pid, curBoard, newBoards);
         }
         return sums;
     };
@@ -73,19 +72,17 @@ combine(const std::vector<evaluator_t>& evaluators, const std::vector<score_t>& 
 //////////////////////////////////////////////////////////////
 Scores
 computeScores(const evaluator_t evaluator, const Moves& moves, const player_id_t pid,
-              const Board& curBoard, const Cards& hidden, vector<Board>& newBoards)
+              const Board& curBoard, vector<Board>& newBoards)
 {
     newBoards.clear();
-    auto myhidden = hidden;
 
     for (const auto& mv : moves) {
         newBoards.push_back(curBoard);
-        auto newHidden = hidden;
-        const auto status = makeMove(newBoards.back(), pid, mv, newHidden, NULL_CARD);
+        const auto status = makeMove(newBoards.back(), pid, mv, NULL_CARD);
         assert(LEGAL_MOVE == status);
     }
 
-    return evaluator(moves, pid, curBoard, newBoards, hidden);
+    return evaluator(moves, pid, curBoard, newBoards);
 }
 
 
@@ -95,7 +92,7 @@ computeScores(const evaluator_t evaluator, const Moves& moves, const player_id_t
 
 Scores
 countPoints(const Moves& moves, const player_id_t pid, const Board& board,
-            const std::vector<Board>& newBoards, const Cards&)
+            const std::vector<Board>& newBoards)
 {
     Scores ret;
     assert(moves.size() == newBoards.size());
@@ -111,7 +108,7 @@ countPoints(const Moves& moves, const player_id_t pid, const Board& board,
 //////////////////////////////////////////////////////////////
 Scores
 countPrestige(const Moves& moves, const player_id_t pid, const Board& board,
-              const std::vector<Board>& newBoards, const Cards&)
+              const std::vector<Board>& newBoards)
 {
     Scores ret;
     ret.reserve(newBoards.size());
@@ -124,7 +121,7 @@ countPrestige(const Moves& moves, const player_id_t pid, const Board& board,
 //////////////////////////////////////////////////////////////
 Scores
 winCondition(const Moves& moves, const player_id_t pid, const Board& curBoard,
-             const std::vector<Board>& newBoards, const Cards& hidden)
+             const std::vector<Board>& newBoards)
 {
     Scores ret;
     ret.reserve(newBoards.size());
@@ -139,7 +136,7 @@ winCondition(const Moves& moves, const player_id_t pid, const Board& curBoard,
 //////////////////////////////////////////////////////////////
 Scores
 countGems(const Moves& moves, const player_id_t pid, const Board& curBoard,
-          const std::vector<Board>& newBoards, const Cards& hidden)
+          const std::vector<Board>& newBoards)
 {
     const auto curGems = curBoard.playerGems(pid).totalGems();
     Scores ret;
@@ -157,7 +154,7 @@ countGems(const Moves& moves, const player_id_t pid, const Board& curBoard,
 //////////////////////////////////////////////////////////////
 Scores
 countMoves(const Moves& moves, const player_id_t pid, const Board& curBoard,
-           const std::vector<Board>& newBoards, const Cards& hidden)
+           const std::vector<Board>& newBoards)
 {
     return Scores(moves.size(), score_t(moves.size()) / MEAN_MOVES);
 }
@@ -176,7 +173,7 @@ gemNumOfColor(const Cards& cards, gem_color_t color)
 
 Scores
 monopolizeGems(const Moves& moves, const player_id_t pid, const Board& curBoard,
-               const std::vector<Board>& newBoards, const Cards& hidden)
+               const std::vector<Board>& newBoards)
 {
     const auto nCards = curBoard.tableCards().size();
     Scores ret;
@@ -204,7 +201,7 @@ monopolizeGems(const Moves& moves, const player_id_t pid, const Board& curBoard,
 //////////////////////////////////////////////////////////////
 Scores
 preferWildcards(const Moves& moves, const player_id_t pid, const Board& curBoard,
-                const std::vector<Board>& newBoards, const Cards& hidden)
+                const std::vector<Board>& newBoards)
 {
     Scores ret;
     ret.reserve(newBoards.size());
@@ -221,7 +218,7 @@ preferWildcards(const Moves& moves, const player_id_t pid, const Board& curBoard
 //////////////////////////////////////////////////////////////
 Scores
 countReturns(const Moves& moves, const player_id_t pid, const Board& curBoard,
-             const std::vector<Board>& newBoards, const Cards& hidden)
+             const std::vector<Board>& newBoards)
 {
     Scores ret;
     ret.reserve(newBoards.size());
@@ -238,7 +235,7 @@ countReturns(const Moves& moves, const player_id_t pid, const Board& curBoard,
 //////////////////////////////////////////////////////////////
 Scores
 preferShortGame(const Moves& moves, const player_id_t pid, const Board& curBoard,
-                const std::vector<Board>& newBoards, const Cards& hidden)
+                const std::vector<Board>& newBoards)
 {
     return Scores(moves.size(),
                   std::log(1. + curBoard.roundNumber()) / std::log(1. / MAX_GAME_ROUNDS));

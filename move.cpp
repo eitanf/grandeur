@@ -152,7 +152,7 @@ addTakeGemMoves(Moves& moves, player_id_t pid, const Board& board)
 ///////////////////////////////////////////////////////////////////
 // Enumerate all the cards (table/reserves) we can afford to buy:
 static void
-addBuyCardMoves(Moves& moves, player_id_t pid, const Board& board, const Cards& myhidden)
+addBuyCardMoves(Moves& moves, player_id_t pid, const Board& board)
 {
     const auto& gems = board.playerGems(pid);
     const auto& prestige = board.playerPrestige(pid);
@@ -160,7 +160,8 @@ addBuyCardMoves(Moves& moves, player_id_t pid, const Board& board, const Cards& 
     auto allCards = board.tableCards();
     allCards.insert(allCards.end(), board.playerReserves(pid).cbegin(),
                     board.playerReserves(pid).cend());
-    allCards.insert(allCards.end(), myhidden.cbegin(), myhidden.cend());
+    allCards.insert(allCards.end(), board.playerHidden(pid).cbegin(),
+                    board.playerHidden(pid).cend());
 
     for (const auto& card : allCards) {
         const auto balance = gems.actualCost(card.cost_ - prestige);
@@ -176,9 +177,10 @@ addBuyCardMoves(Moves& moves, player_id_t pid, const Board& board, const Cards& 
 ///////////////////////////////////////////////////////////////////
 // Enumerate all the cards that can be reserved:
 static void
-addReserveCardMoves(Moves& moves, player_id_t pid, const Board& board, const Cards& myhidden)
+addReserveCardMoves(Moves& moves, player_id_t pid, const Board& board)
 {
-    if (board.playerReserves(pid).size() + myhidden.size() >= MAX_PLAYER_RESERVES
+    if (board.playerReserves(pid).size() +
+        board.playerHidden(pid).size() >= MAX_PLAYER_RESERVES
         || board.playerGems(pid).totalGems() >= MAX_PLAYER_GEMS
         || board.tableGems().getCount(YELLOW) <= 0) {
         return;
@@ -205,13 +207,13 @@ addReserveCardMoves(Moves& moves, player_id_t pid, const Board& board, const Car
 ///////////////////////////////////////////////////////////////////
 // Accumulate legal moves of all four types:
 Moves
-legalMoves(const Board& board, player_id_t pid, const Cards& myHidden)
+legalMoves(const Board& board, player_id_t pid)
 {
     Moves ret;
 
     addTakeGemMoves(ret, pid, board);
-    addBuyCardMoves(ret, pid, board, myHidden);
-    addReserveCardMoves(ret, pid, board, myHidden);
+    addBuyCardMoves(ret, pid, board);
+    addReserveCardMoves(ret, pid, board);
 
     return ret;
 }
@@ -220,17 +222,16 @@ legalMoves(const Board& board, player_id_t pid, const Cards& myHidden)
 ///////////////////////////////////////////////////////////////////
 // Evaluate a move on a throwaway board to check its legality:
 MoveStatus
-isLegalMove(Board board, player_id_t pid, const GameMove& move, Cards hidden)
+isLegalMove(Board board, player_id_t pid, const GameMove& move)
 {
-    return makeMove(board, pid, move, hidden);
+    return makeMove(board, pid, move);
 }
 
 
 ///////////////////////////////////////////////////////////////////
 // Execute a given move on a given board
 MoveStatus
-makeMove(Board& board, player_id_t pid, const GameMove& mymove,
-         Cards& myhidden, const Card& replacement)
+makeMove(Board& board, player_id_t pid, const GameMove& mymove, const Card& replacement)
 {
     MoveStatus status = LEGAL_MOVE;
 
@@ -242,12 +243,12 @@ makeMove(Board& board, player_id_t pid, const GameMove& mymove,
     case MoveType::BUY_CARD:
         assert(!mymove.payload_.card_.isWild());
         assert(!mymove.payload_.card_.isNull());
-        status = board.buyCard(pid, mymove.payload_.card_.id_, myhidden, replacement);
+        status = board.buyCard(pid, mymove.payload_.card_.id_, replacement);
         break;
 
     case MoveType::RESERVE_CARD:
         assert(!mymove.payload_.card_.isNull());
-        status = board.reserveCard(pid, mymove.payload_.card_, myhidden, replacement);
+        status = board.reserveCard(pid, mymove.payload_.card_, replacement);
         break;
     }
 
@@ -258,14 +259,14 @@ makeMove(Board& board, player_id_t pid, const GameMove& mymove,
 // Chose a move for a given player, find replacement card if necessary,
 // and execute the move.
 static MoveStatus
-playerMove(Board& board, player_id_t pid, Cards& hidden, Cards& deck,
+playerMove(Board& board, player_id_t pid, Cards& deck,
            const Player* player, const Moves& legal)
 {
     if (legal.empty()) {
         return LEGAL_MOVE;
     }
 
-    auto pMove = player->getMove(board, hidden, legal);
+    auto pMove = player->getMove(board, legal);
 
     // Find replacement card if buying/reserving from table:
     Card replacement = NULL_CARD;
@@ -292,7 +293,7 @@ playerMove(Board& board, player_id_t pid, Cards& hidden, Cards& deck,
                              GameMove(payloadCard, pMove.type_);
 
     const auto nobles = board.tableNobles();
-    MoveStatus status = makeMove(board, pid, newMove, hidden, replacement);
+    MoveStatus status = makeMove(board, pid, newMove, replacement);
     assert(status == LEGAL_MOVE);
 
     MoveNotifier::instance().notifyObservers(
@@ -315,14 +316,13 @@ playerMove(Board& board, player_id_t pid, Cards& hidden, Cards& deck,
 player_id_t
 mainGameLoop(Board& board, Cards& deck, Players& players)
 {
-    Cards hiddenReserves[MAX_NPLAYER];
     MoveNotifier::instance().notifyObservers(MoveEvent::GAME_BEGAN, board, 0);
 
     while (!board.gameOver()) {
         board.newRound();
         for (player_id_t pid = 0; pid < board.playersNum(); ++pid) {
-            const auto legal = legalMoves(board, pid, hiddenReserves[pid]);
-            playerMove(board, pid, hiddenReserves[pid], deck, players[pid], legal);
+            const auto legal = legalMoves(board, pid);
+            playerMove(board, pid, deck, players[pid], legal);
         }
     }
 

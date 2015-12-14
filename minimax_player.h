@@ -20,11 +20,11 @@ class MinimaxPlayer final : public Player {
     MinimaxPlayer(unsigned maxDepth, const evaluator_t& eval, player_id_t pid, score_t agingWeight = 1);
 
     virtual GameMove
-    getMove(const Board& board, const Cards& hidden, const Moves& legal) const;
+    getMove(const Board& board, const Moves& legal) const;
 
   private:
     std::pair<unsigned, score_t>
-    bestMoveN(player_id_t, unsigned, const Board&, const Cards&, const Cards&, const Moves&) const;
+    bestMoveN(player_id_t pid, unsigned depth, const Board& board, const Moves& legal) const;
 
     unsigned depth_;
     evaluator_t evaluator_;

@@ -72,8 +72,8 @@ TEST(boardTests, ctor)
 }
 
 #define TAKE(p, gems) EXPECT_EQ(LEGAL_MOVE, board_.takeGems(p, gems))
-#define BUY(p, card, rep) EXPECT_EQ(LEGAL_MOVE, board_.buyCard(p, card.id_, hidden_[p], rep))
-#define RESERVE(p, card, rep) EXPECT_EQ(LEGAL_MOVE, board_.reserveCard(p, card, hidden_[p],  rep))
+#define BUY(p, card, rep) EXPECT_EQ(LEGAL_MOVE, board_.buyCard(p, card.id_, rep))
+#define RESERVE(p, card, rep) EXPECT_EQ(LEGAL_MOVE, board_.reserveCard(p, card,  rep))
 
 class MidGameBoard : public ::testing::Test {
   public:
@@ -83,7 +83,6 @@ class MidGameBoard : public ::testing::Test {
     Cards initial_;
     Board::Nobles nobles_;
     Board board_;
-    Cards hidden_[nplayer_];
 };
 
 
@@ -92,8 +91,7 @@ MidGameBoard::MidGameBoard()
                      g_deck[40], g_deck[41], g_deck[42], g_deck[43],
                      g_deck[70], g_deck[71], g_deck[72], g_deck[73] }),
           nobles_({ g_nobles[5], g_nobles[6], g_nobles[7], g_nobles[8] }),
-          board_(nplayer_, initial_, nobles_),
-          hidden_()
+          board_(nplayer_, initial_, nobles_)
 {
     // Make some game moves (6 rounds):
     TAKE(0, Gems({ 0, 2, 0, 0, 0 }));
@@ -139,10 +137,10 @@ TEST_F(MidGameBoard, correctReserves)
     EXPECT_EQ(board_.playerReserves(1).size(), 0);
     EXPECT_EQ(board_.playerReserves(2).size(), 0);
 
-    EXPECT_EQ(hidden_[0].size(), 1);
-    EXPECT_EQ(hidden_[0].at(0).id_, CardID({ MEDIUM, 44 }));
-    EXPECT_EQ(hidden_[1].size(), 0);
-    EXPECT_EQ(hidden_[2].size(), 0);
+    EXPECT_EQ(board_.playerHidden(0).size(), 1);
+    EXPECT_EQ(board_.playerHidden(0).at(0).id_, CardID({ MEDIUM, 44 }));
+    EXPECT_EQ(board_.playerHidden(1).size(), 0);
+    EXPECT_EQ(board_.playerHidden(2).size(), 0);
 }
 
 
@@ -192,9 +190,9 @@ TEST_F(MidGameBoard, legalMoves)
   RESERVE(0, g_deck[8], NULL_CARD);
   RESERVE(2, g_deck[12], g_deck[14]);
 
-  const auto p0moves = legalMoves(board_, 0, hidden_[0]);
-  const auto p1moves = legalMoves(board_, 1, hidden_[1]);
-  const auto p2moves = legalMoves(board_, 2, hidden_[2]);
+  const auto p0moves = legalMoves(board_, 0);
+  const auto p1moves = legalMoves(board_, 1);
+  const auto p2moves = legalMoves(board_, 2);
 
   EXPECT_EQ(take2MovesNum(p0moves), 1);
   EXPECT_EQ(take2MovesNum(p1moves), 3);
@@ -288,7 +286,7 @@ TEST_F(MidGameBoard, insufficientBuy)
     RESERVE(1, g_deck[72], NULL_CARD);
     RESERVE(1, g_deck[73], NULL_CARD);
     TAKE(1, Gems({ 0, 2 }));
-    EXPECT_EQ(board_.buyCard(1, g_deck[40].id_, hidden_[1], NULL_CARD), INSUFFICIENT_GEMS);
+    EXPECT_EQ(board_.buyCard(1, g_deck[40].id_, NULL_CARD), INSUFFICIENT_GEMS);
 }
 
 
@@ -298,9 +296,9 @@ TEST_F(MidGameBoard, doubleBuy)
     TAKE(1, Gems({1, 1, 1}));
     TAKE(1, Gems({0, 1, 0, 1, 1}));
     // A card I already bought:
-    EXPECT_EQ(board_.buyCard(1, g_deck[0].id_, hidden_[1], NULL_CARD), UNAVAILABLE_CARD);
+    EXPECT_EQ(board_.buyCard(1, g_deck[0].id_, NULL_CARD), UNAVAILABLE_CARD);
     // A card someone else already bought:
-    EXPECT_EQ(board_.buyCard(1, g_deck[1].id_, hidden_[1], NULL_CARD), UNAVAILABLE_CARD);
+    EXPECT_EQ(board_.buyCard(1, g_deck[1].id_, NULL_CARD), UNAVAILABLE_CARD);
 }
 
 
@@ -310,28 +308,28 @@ TEST_F(MidGameBoard, unavailableBuy)
     TAKE(1, Gems({1, 1, 1}));
     TAKE(1, Gems({0, 1, 0, 1, 1}));
     // A card not for sale:
-    EXPECT_EQ(board_.buyCard(1, g_deck[16].id_, hidden_[1], NULL_CARD), UNAVAILABLE_CARD);
+    EXPECT_EQ(board_.buyCard(1, g_deck[16].id_, NULL_CARD), UNAVAILABLE_CARD);
 }
 
 
 // Try to buy any sort of card that doesn't exist:
 TEST_F(MidGameBoard, invalidBuy)
 {
-    EXPECT_EQ(board_.buyCard(1, { LOW, 58 }, hidden_[1], NULL_CARD), UNAVAILABLE_CARD);
-    EXPECT_EQ(board_.buyCard(1, { LOW, -10 }, hidden_[1], NULL_CARD), UNAVAILABLE_CARD);
-    EXPECT_EQ(board_.buyCard(1, { LOW, CardID::WILDCARD }, hidden_[1], NULL_CARD), BUY_WILDCARD);
-    EXPECT_EQ(board_.buyCard(1, { LOW, CardID::NULLCARD}, hidden_[1], NULL_CARD), UNAVAILABLE_CARD);
+    EXPECT_EQ(board_.buyCard(1, { LOW, 58 }, NULL_CARD), UNAVAILABLE_CARD);
+    EXPECT_EQ(board_.buyCard(1, { LOW, -10 }, NULL_CARD), UNAVAILABLE_CARD);
+    EXPECT_EQ(board_.buyCard(1, { LOW, CardID::WILDCARD }, NULL_CARD), BUY_WILDCARD);
+    EXPECT_EQ(board_.buyCard(1, { LOW, CardID::NULLCARD}, NULL_CARD), UNAVAILABLE_CARD);
 }
 
 
 // Reserve card already purchased or reserved:
 TEST_F(MidGameBoard, unavailableReserve)
 {
-    EXPECT_EQ(board_.reserveCard(0, g_deck[0], hidden_[0], NULL_CARD), UNAVAILABLE_CARD);
-    EXPECT_EQ(board_.reserveCard(0, g_deck[42], hidden_[0], NULL_CARD), UNAVAILABLE_CARD);
-    EXPECT_EQ(board_.reserveCard(0, g_deck[44], hidden_[0], NULL_CARD), UNAVAILABLE_CARD);
-    EXPECT_EQ(board_.reserveCard(2, g_deck[1], hidden_[2], NULL_CARD), UNAVAILABLE_CARD);
-    EXPECT_EQ(board_.reserveCard(2, g_deck[42], hidden_[2], NULL_CARD), UNAVAILABLE_CARD);
+    EXPECT_EQ(board_.reserveCard(0, g_deck[0], NULL_CARD), UNAVAILABLE_CARD);
+    EXPECT_EQ(board_.reserveCard(0, g_deck[42], NULL_CARD), UNAVAILABLE_CARD);
+    EXPECT_EQ(board_.reserveCard(0, g_deck[44], NULL_CARD), UNAVAILABLE_CARD);
+    EXPECT_EQ(board_.reserveCard(2, g_deck[1], NULL_CARD), UNAVAILABLE_CARD);
+    EXPECT_EQ(board_.reserveCard(2, g_deck[42], NULL_CARD), UNAVAILABLE_CARD);
 }
 
 
@@ -341,7 +339,7 @@ TEST_F(MidGameBoard, tooManyReserves)
     RESERVE(1, g_deck[13], NULL_CARD);
     RESERVE(1, g_deck[14], NULL_CARD);
     RESERVE(1, g_deck[15], NULL_CARD);
-    EXPECT_EQ(board_.reserveCard(1, g_deck[16], hidden_[1], NULL_CARD), TOO_MANY_RESERVES);
+    EXPECT_EQ(board_.reserveCard(1, g_deck[16], NULL_CARD), TOO_MANY_RESERVES);
 }
 
 
@@ -352,7 +350,7 @@ TEST_F(MidGameBoard, tooManyGemsToReserve)
     TAKE(1, Gems({0, 1, 0, 1, 1}));
     TAKE(1, Gems({0, 1, 0, 1, 1}));
     RESERVE(1, g_deck[14], NULL_CARD); // 10 gems
-    EXPECT_EQ(board_.reserveCard(1, g_deck[15], hidden_[1], NULL_CARD), TOO_MANY_GEMS);
+    EXPECT_EQ(board_.reserveCard(1, g_deck[15], NULL_CARD), TOO_MANY_GEMS);
 }
 
 
@@ -363,7 +361,7 @@ TEST_F(MidGameBoard, insufficientGemsToReserve)
     RESERVE(1, g_deck[13], NULL_CARD);
     RESERVE(1, g_deck[14], NULL_CARD);
     RESERVE(1, g_deck[15], NULL_CARD);
-    EXPECT_EQ(board_.reserveCard(2, g_deck[15], hidden_[2], NULL_CARD), INSUFFICIENT_TABLE_GEMS);
+    EXPECT_EQ(board_.reserveCard(2, g_deck[15], NULL_CARD), INSUFFICIENT_TABLE_GEMS);
 }
 
 
@@ -389,8 +387,8 @@ TEST_F(MidGameBoard, cardExhaustion)
     // OK, now we have no more cards left on the table. We can buy reserves but no cards (with no deaths):
     TAKE(0, Gems({ 0, 0, 2 }));
     BUY(0, g_deck[6], NULL_CARD);
-    ASSERT_EQ(board_.reserveCard(0, g_deck[19], hidden_[1], g_deck[20]), UNAVAILABLE_CARD);
-    ASSERT_EQ(board_.buyCard(0, g_deck[19].id_, hidden_[1], NULL_CARD), UNAVAILABLE_CARD);
+    ASSERT_EQ(board_.reserveCard(0, g_deck[19], g_deck[20]), UNAVAILABLE_CARD);
+    ASSERT_EQ(board_.buyCard(0, g_deck[19].id_, NULL_CARD), UNAVAILABLE_CARD);
 }
 
 // Test that acquiring a noble updates points correctly.

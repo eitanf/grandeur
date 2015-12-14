@@ -65,14 +65,14 @@ class Player;
 
 // Update the board status in response to game move (one of three types).
 // Returns an error code if the move could not be carried out, LEGAL_MOVE otherwise.
-// Receives my (move maker) player id, the actual move, my hidden reserves, and
-// possibly a card to replace any other card purchased or reserved from the table ones.
+// Receives my (move maker) player id, the actual move, and possibly a card to
+// replace any other card purchased or reserved from the table ones.
 MoveStatus makeMove(Board& board, player_id_t pid, const GameMove& mymove,
-                    Cards& myhidden, const Card& replacement = NULL_CARD);
+                    const Card& replacement = NULL_CARD);
 
 
 // Attempt to perform move on a copy of board, and check its legality.
-MoveStatus isLegalMove(Board, player_id_t, const GameMove&, Cards myhidden);
+MoveStatus isLegalMove(Board, player_id_t, const GameMove&);
 
 // legalMoves enumerates (almost) all possible legal moves for a given player.
 // The function all of the board elements this player can see.
@@ -80,7 +80,7 @@ MoveStatus isLegalMove(Board, player_id_t, const GameMove&, Cards myhidden);
 // a player takes an excess over MAX_GEMS and then returns some. This move is
 // however identified as legal by isLegalMove().
 Moves
-legalMoves(const Board& board, player_id_t pid, const Cards& myHidden);
+legalMoves(const Board& board, player_id_t pid);
 
 
 // mainGaimLoop is the run a complete game, start to finish
