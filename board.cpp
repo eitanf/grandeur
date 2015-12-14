@@ -163,7 +163,6 @@ Board::reserveCard(player_id_t pid, const Card& card,
     assert(pid < player_id_t(nplayer_));
     assert(totalGameGems() == g_gem_allocation[nplayer_]);
     assert(!card.isNull());
-    assert(!card.isWild());
 
     // Ensure that any replacement card comes from non-empty deck
     assert(replacement.isNull() || remainingCards_[replacement.id_.type_] > 0);

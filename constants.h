@@ -39,6 +39,9 @@ using points_t = unsigned;
 // The minimum amount of prestige points required to win
 static constexpr points_t MIN_WIN_POINTS = 15;
 
+// Average approximate no. of legal moves per turn
+static constexpr unsigned MEAN_MOVES = 27;
+
 using gem_count_t = int8_t;
 
 // A mapping from no. of players (2--4) to no. of gems of each color in the board

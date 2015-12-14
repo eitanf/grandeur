@@ -86,12 +86,14 @@ class MidGameBoard : public ::testing::Test {
     Cards hidden_[nplayer_];
 };
 
-MidGameBoard::MidGameBoard() : initial_({g_deck[0], g_deck[3], g_deck[4], g_deck[6],
-                                         g_deck[40], g_deck[41], g_deck[42], g_deck[43],
-                                         g_deck[70], g_deck[71], g_deck[72], g_deck[73] }),
-                               nobles_({ g_nobles[5], g_nobles[6], g_nobles[7], g_nobles[8] }),
-                               board_(nplayer_, initial_, nobles_),
-                               hidden_()
+
+MidGameBoard::MidGameBoard()
+        : initial_({ g_deck[0], g_deck[3], g_deck[4], g_deck[6],
+                     g_deck[40], g_deck[41], g_deck[42], g_deck[43],
+                     g_deck[70], g_deck[71], g_deck[72], g_deck[73] }),
+          nobles_({ g_nobles[5], g_nobles[6], g_nobles[7], g_nobles[8] }),
+          board_(nplayer_, initial_, nobles_),
+          hidden_()
 {
     // Make some game moves (6 rounds):
     TAKE(0, Gems({ 0, 2, 0, 0, 0 }));

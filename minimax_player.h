@@ -17,7 +17,7 @@ namespace grandeur {
 
 class MinimaxPlayer final : public Player {
   public:
-    MinimaxPlayer(unsigned maxDepth, const evaluator_t& eval, player_id_t pid);
+    MinimaxPlayer(unsigned maxDepth, const evaluator_t& eval, player_id_t pid, score_t agingWeight = 1);
 
     virtual GameMove
     getMove(const Board& board, const Cards& hidden, const Moves& legal) const;
@@ -28,6 +28,7 @@ class MinimaxPlayer final : public Player {
 
     unsigned depth_;
     evaluator_t evaluator_;
+    score_t agingWeight_;
 };
 
 }  // namespace

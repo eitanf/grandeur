@@ -68,5 +68,28 @@ Scores countPrestige(const Moves& moves, const player_id_t pid, const Board& cur
 Scores winCondition(const Moves& moves, const player_id_t pid, const Board& curBoard,
                     const std::vector<Board>& newBoards, const Cards& hidden);
 
+// Sum up total no. of player gems:
+Scores countGems(const Moves& moves, const player_id_t pid, const Board& curBoard,
+                 const std::vector<Board>& newBoards, const Cards& hidden);
+
+// Award points based on how many moves we have (more moves->more 'mobility')
+Scores countMoves(const Moves& moves, const player_id_t pid, const Board& curBoard,
+                  const std::vector<Board>& newBoards, const Cards& hidden);
+
+// Reward BUY moves based on how rare the gem they give is
+Scores monopolizeGems(const Moves& moves, const player_id_t pid, const Board& curBoard,
+                      const std::vector<Board>& newBoards, const Cards& hidden);
+
+// Reward RESERVE moves that keep information hidden from other player, based on deck type
+Scores preferWildcards(const Moves& moves, const player_id_t pid, const Board& curBoard,
+                       const std::vector<Board>& newBoards, const Cards& hidden);
+
+// Penalize TAKE moves that return gems
+Scores countReturns(const Moves& moves, const player_id_t pid, const Board& curBoard,
+                    const std::vector<Board>& newBoards, const Cards& hidden);
+
+// Penalize move by round number
+Scores preferShortGame(const Moves& moves, const player_id_t pid, const Board& curBoard,
+                       const std::vector<Board>& newBoards, const Cards& hidden);
 
 }  // namespace
