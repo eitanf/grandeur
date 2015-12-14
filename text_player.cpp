@@ -38,12 +38,11 @@ TextPlayer::getMove(const Board& board, const Moves& legal) const
     }
 
     cout << "\nYour turn! Board state:\n" << board;
-    if (!board.playerHidden(Player::pid_).empty()) {
-        cout << "Hidden reserve cards:\n";
-        for (auto& c : board.playerHidden(Player::pid_)) {
-            cout << c << "\n";
-        }
+    cout << "Your reserved cards: ";
+    for (auto const& c : board.playerReserves(Player::pid_)) {
+        cout << c << "\n";
     }
+
 
     const auto evaluator = combine({ winCondition, countPoints, countPrestige },
                                    { 100,          2,           1 } );

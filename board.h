@@ -38,7 +38,7 @@ class Board {
     MoveStatus buyCard(player_id_t pid, CardID cid, const Card& replacement = NULL_CARD);
 
     // Perform record keeping after reserving a card. If the CardID is not in
-    // the table cards, it's sought in the hidden pile.
+    // the table cards, it's assumed to be in the undealt deck
     MoveStatus reserveCard(player_id_t pid, const Card& card, const Card& replacement = NULL_CARD);
 
     void newRound() { ++round_; }  // Signal a full  round completed.
@@ -56,8 +56,6 @@ class Board {
     const Gems& playerPrestige(player_id_t pid) const { return playerPrestige_.at(pid); }
 
     points_t playerPoints(player_id_t pid) const { return playerPoints_.at(pid); }
-
-    const std::vector<Card>& playerHidden(player_id_t pid) const { return playerHidden_.at(pid); }
 
     unsigned remainingCards(unsigned deck) const;
 
@@ -93,7 +91,6 @@ class Board {
     std::vector<Gems> playerPrestige_;   // The permanent resource discount of each player
     std::vector<points_t> playerPoints_;   // How many points each player has.
     std::vector<Cards> playerReserves_;  // Which visible cards each players has reserved
-    std::vector<Cards> playerHidden_;  // Which invisible cards each player has reserved
     unsigned remainingCards_[NDECKS];  // How many cards remain of each deck type.
     unsigned round_;  // No. of game rounds, starting from one.
 

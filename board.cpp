@@ -16,7 +16,7 @@ Board::Board(unsigned nplayer, const Cards& initialCards, const Nobles& initialN
   : nplayer_(nplayer), cards_(initialCards), purchased_(), nobles_(initialNobles),
     tableGems_(g_gem_allocation[nplayer]), playerGems_(nplayer),
     playerPrestige_(nplayer), playerPoints_(nplayer), playerReserves_(nplayer),
-    playerHidden_(nplayer), remainingCards_(), round_(0)
+    remainingCards_(), round_(0)
 {
     remainingCards_[LOW] = deckCount(LOW, g_deck) - deckCount(LOW, cards_);
     remainingCards_[MEDIUM] = deckCount(MEDIUM, g_deck) - deckCount(MEDIUM, cards_);
@@ -107,15 +107,12 @@ Board::buyCard(player_id_t pid, CardID cid, const Card& replacement)
     assert(replacement.isNull() || cardIn(cid, cards_));
 
     // Ensure that buying a card from reserves means no replacement card:
-    assert((!cardIn(cid, playerHidden_[pid])
-         && !cardIn(cid, playerReserves_[pid]))
-           || replacement.isNull());
+    assert(!cardIn(cid, playerReserves_[pid]) || replacement.isNull());
 
     // Ensure replacement is legitimate (not previously seen):
     assert(!replacement.isWild());
     assert(!cardIn(replacement.id_, cards_));
     assert(!cardIn(replacement.id_, purchased_));
-    assert(!cardIn(replacement.id_, playerHidden_[pid]));
     for (auto i = 0; i < nplayer_; ++i) {
         assert(!cardIn(replacement.id_, playerReserves_[i]));
     }
@@ -142,11 +139,6 @@ Board::buyCard(player_id_t pid, CardID cid, const Card& replacement)
         return (buyCardFromPile(pid, where, playerReserves_[pid], replacement));
     }
 
-    where = cardLocation(cid, playerHidden_[pid]);
-    if (where != end(playerHidden_[pid])) {
-        return (buyCardFromPile(pid, where, playerHidden_[pid], replacement));
-    }
-
     // Couldn't find cid in any eligible pile, so it's a bad input.
     return UNAVAILABLE_CARD;
 }
@@ -155,7 +147,7 @@ Board::buyCard(player_id_t pid, CardID cid, const Card& replacement)
 //////////////////////////////////////////////////////////////////////////////////////
 // Checks that the player hasn't exceed allowed reservations, and that
 // enough yellow coins exist.
-// If card not found board, add it to hidden.
+// If card not found board, assume it's a hidden (undealt) card
 MoveStatus
 Board::reserveCard(player_id_t pid, const Card& card, const Card& replacement)
 {
@@ -171,14 +163,13 @@ Board::reserveCard(player_id_t pid, const Card& card, const Card& replacement)
     assert(!replacement.isWild());
     assert(!cardIn(replacement.id_, cards_));
     assert(!cardIn(replacement.id_, purchased_));
-    assert(!cardIn(replacement.id_, playerHidden_[pid]));
     for (auto i = 0; i < nplayer_; ++i) {
         assert(!cardIn(replacement.id_, playerReserves_[i]));
     }
 
     ///// Next, check for bad user inputs:
     // Can't reserve too many cards:
-    if (playerHidden_[pid].size() + playerReserves_[pid].size() >= MAX_PLAYER_RESERVES) {
+    if (playerReserves_[pid].size() >= MAX_PLAYER_RESERVES) {
         return TOO_MANY_RESERVES;
     }
 
@@ -195,34 +186,30 @@ Board::reserveCard(player_id_t pid, const Card& card, const Card& replacement)
     }
 
     // Ensure card hasn't been purchased or reserved before:
-    if (cardIn(card.id_, purchased_) || cardIn(card.id_, playerHidden_[pid])) {
-        return UNAVAILABLE_CARD;
-    }
-    for (auto i = 0; i < nplayer_; ++i) {
-        if (cardIn(card.id_, playerReserves_[i])) {
+    if (!card.isWild()) {
+        if (cardIn(card.id_, purchased_)) {
+            return UNAVAILABLE_CARD;
+        }
+        for (auto i = 0; i < nplayer_; ++i) {
+            if (cardIn(card.id_, playerReserves_[i])) {
+                return UNAVAILABLE_CARD;
+            }
+        }
+        // If card has a replacement, it must be found in table cards:
+        if (!replacement.isNull() && !cardIn(card.id_, cards_)) {
             return UNAVAILABLE_CARD;
         }
     }
 
-    // Ensure that replacement is only needed for table cards:
-    if (!(replacement.isNull() || cardIn(card.id_, cards_))) {
-        return UNAVAILABLE_CARD;
-    }
-
-
-    //// Proceed to find the card in table cards or not (undealt deck):
     auto where = cardLocation(card.id_, cards_);
-
-    if (where == end(cards_)) {  // An unseen card:
-        playerHidden_[pid].push_back(card);
+    if (where == cards_.cend()) {   // Undealt card:
         assert(remainingCards_[card.id_.type_] > 0);
         --remainingCards_[card.id_.type_];
-    }
-    else {              // A table card:
-        playerReserves_[pid].push_back(card);
+    } else {  // Table card
         removeCard(cards_, where, replacement);
     }
 
+    playerReserves_[pid].push_back(card);
     playerGems_[pid].inc(YELLOW);
     tableGems_.dec(YELLOW);
     return LEGAL_MOVE;
@@ -231,7 +218,7 @@ Board::reserveCard(player_id_t pid, const Card& card, const Card& replacement)
 
 //////////////////////////////////////////////////////////////////////////////////////
 // A game is over when a player reached MIN_WIN_POINTS or when all table cards
-// have been exhuasted
+// have been exhausted
 bool
 Board::gameOver() const
 {
@@ -410,10 +397,7 @@ operator<<(std::ostream& os, const Board& board)
         os << "points: " << board.playerPoints(p) << "   ";
         os << "gems: " << board.playerGems(p) << "   ";
         os << "prestige: " << board.playerPrestige(p) << "   ";
-        os << "reserved (visible):";
-        for (auto const& c : board.playerReserves(p)) {
-            os << "  " << c.id_;
-        }
+        os << "reserved: " << board.playerReserves(p).size() << " cards";
         os << "\n";
     }
 

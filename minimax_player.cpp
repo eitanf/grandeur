@@ -48,7 +48,7 @@ MinimaxPlayer::bestMoveN(player_id_t pid,          // The player making the curr
             computeScores(evaluator_, legal, pid, board, newBoards);
     if (depth > 1) {
         tbb::parallel_for(0, int(legal.size()), 1, [&](auto idx)
-//sequential        for (unsigned idx = 0; idx < legal.size(); ++idx)
+// sequential        for (unsigned idx = 0; idx < legal.size(); ++idx)
         {
             if (pid == 0) {
                 newBoards[idx].newRound();
@@ -89,7 +89,7 @@ static PlayerFactory::Registrator reg6("minimax-6",
 
 static const auto allEval =
         combine({ winCondition, countPoints, countPrestige, countGems, countMoves, monopolizeGems, preferWildcards, countReturns, preferShortGame },
-                { 100,          2,           1,             -10,       0,         0,             0,               0,           0 });
+                { 100,          2,           1,             1,         0,          0,              0,               -1,           1 });
 
 
 static PlayerFactory::Registrator regs3("special-3",

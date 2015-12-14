@@ -158,10 +158,11 @@ addBuyCardMoves(Moves& moves, player_id_t pid, const Board& board)
     const auto& prestige = board.playerPrestige(pid);
 
     auto allCards = board.tableCards();
-    allCards.insert(allCards.end(), board.playerReserves(pid).cbegin(),
-                    board.playerReserves(pid).cend());
-    allCards.insert(allCards.end(), board.playerHidden(pid).cbegin(),
-                    board.playerHidden(pid).cend());
+    for (const auto c : board.playerReserves(pid)) {
+        if (!c.isWild()) {
+            allCards.push_back(c);
+        }
+    }
 
     for (const auto& card : allCards) {
         const auto balance = gems.actualCost(card.cost_ - prestige);
@@ -179,8 +180,7 @@ addBuyCardMoves(Moves& moves, player_id_t pid, const Board& board)
 static void
 addReserveCardMoves(Moves& moves, player_id_t pid, const Board& board)
 {
-    if (board.playerReserves(pid).size() +
-        board.playerHidden(pid).size() >= MAX_PLAYER_RESERVES
+    if (board.playerReserves(pid).size() >= MAX_PLAYER_RESERVES
         || board.playerGems(pid).totalGems() >= MAX_PLAYER_GEMS
         || board.tableGems().getCount(YELLOW) <= 0) {
         return;

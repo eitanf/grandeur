@@ -132,15 +132,11 @@ TEST_F(MidGameBoard, correctTableCards)
 
 TEST_F(MidGameBoard, correctReserves)
 {
-    EXPECT_EQ(board_.playerReserves(0).size(), 1);
+    EXPECT_EQ(board_.playerReserves(0).size(), 2);
     EXPECT_EQ(board_.playerReserves(0).at(0).id_, CardID({ MEDIUM, 42 }));
+    EXPECT_EQ(board_.playerReserves(0).at(1).id_, CardID({ MEDIUM, 44 }));
     EXPECT_EQ(board_.playerReserves(1).size(), 0);
     EXPECT_EQ(board_.playerReserves(2).size(), 0);
-
-    EXPECT_EQ(board_.playerHidden(0).size(), 1);
-    EXPECT_EQ(board_.playerHidden(0).at(0).id_, CardID({ MEDIUM, 44 }));
-    EXPECT_EQ(board_.playerHidden(1).size(), 0);
-    EXPECT_EQ(board_.playerHidden(2).size(), 0);
 }
 
 
@@ -390,6 +386,7 @@ TEST_F(MidGameBoard, cardExhaustion)
     ASSERT_EQ(board_.reserveCard(0, g_deck[19], g_deck[20]), UNAVAILABLE_CARD);
     ASSERT_EQ(board_.buyCard(0, g_deck[19].id_, NULL_CARD), UNAVAILABLE_CARD);
 }
+
 
 // Test that acquiring a noble updates points correctly.
 TEST_F(MidGameBoard, nobleAcquisition)
