@@ -29,6 +29,7 @@ class Config {
 
     std::mt19937_64 prng_; // A PRNG to initialize game state:
     Players players_;
+    unsigned nthread_ = 0;  // No. of threads to run
 
   private:
     Logger* loggerPtr_ = nullptr;

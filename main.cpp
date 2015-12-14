@@ -71,7 +71,7 @@ int main(int argc, char** argv)
     using namespace grandeur;
 
     g_config = new Config(vector<string>(argv + 1, argv + argc));
-    tbb::task_scheduler_init init;
+    tbb::task_scheduler_init init(g_config->nthread_);
 
     // Create shuffled card deck:
     Cards deck(begin(g_deck), end(g_deck));
