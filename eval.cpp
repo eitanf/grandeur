@@ -242,4 +242,29 @@ preferShortGame(const Moves& moves, const player_id_t pid, const Board& curBoard
 }
 
 
+//////////////////////////////////////////////////////////////
+Scores
+preferBuyTowardNoble(const Moves& moves, const player_id_t pid, const Board& curBoard,
+                     const std::vector<Board>& newBoards)
+{
+    Scores ret(moves.size(), 0.);
+    if (curBoard.tableNobles().empty()) {
+        return ret;
+    }
+
+    for (unsigned i = 0; i < moves.size(); ++i) {
+        if (moves[i].type_ == BUY_CARD) {
+            const auto color = moves[i].payload_.card_.color_;
+            for (const auto& n : curBoard.tableNobles()) {
+                const auto nCost = n.cost_.getCount(color);
+                if (nCost > 0
+                 && nCost > curBoard.playerPrestige(pid).getCount(color)) {
+                    ++ret[i];
+                }
+            }
+        }
+    }
+    return (1. / curBoard.tableNobles().size()) * ret;
+}
+
 } // namespace

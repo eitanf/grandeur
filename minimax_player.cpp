@@ -88,8 +88,9 @@ static PlayerFactory::Registrator reg6("minimax-6",
                   [](player_id_t pid){ return new MinimaxPlayer(6, comboEval, pid); });
 
 static const auto allEval =
-        combine({ winCondition, countPoints, countPrestige, countGems, countMoves, monopolizeGems, preferWildcards, countReturns, preferShortGame },
-                { 100,          2,           1,             1,         0,          0,              0,               -1,           1 });
+        combine({ winCondition, countPoints, countPrestige, countGems, countMoves,
+                  monopolizeGems, preferWildcards, countReturns, preferShortGame, preferBuyTowardNoble },
+                { 100, 2, 1, 1, 0, 0, 0, -1, 1, 2 });
 
 
 static PlayerFactory::Registrator regs3("special-3",

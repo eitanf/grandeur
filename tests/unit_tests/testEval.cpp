@@ -248,6 +248,7 @@ TEST_F(LateGameBoard, countReturns)
     }
 }
 
+
 TEST_F(LateGameBoard, preferShortGame)
 {
 
@@ -255,4 +256,33 @@ TEST_F(LateGameBoard, preferShortGame)
     board_.newRound();
     const auto s1 = playerScores(0, preferShortGame)[0];
     EXPECT_LT(s1, s0);
+}
+
+
+TEST_F(LateGameBoard, preferBuyTowardNoble)
+{
+    BUY(1, g_deck[4], g_deck[18]);
+    BUY(1, g_deck[6], g_deck[26]);
+    TAKE(2, Gems({ 1, 1, 1, 0, 0 }));
+    TAKE(2, Gems({ 1, 1, 1, 0, 0 }));
+    TAKE(2, Gems({ 1, 1, 1, 0, 0 }));
+
+    std::vector<Board> nb;
+    const auto moves0 = legalMoves(board_, 0);
+    const auto moves1 = legalMoves(board_, 1);
+    const auto moves2 = legalMoves(board_, 2);
+    const auto scores0 = computeScores(preferBuyTowardNoble, moves0, 0, board_, nb);
+    const auto scores1 = computeScores(preferBuyTowardNoble, moves1, 1, board_, nb);
+    const auto scores2 = computeScores(preferBuyTowardNoble, moves2, 2, board_, nb);
+
+    EXPECT_EQ(0.5, scoreOf(scores0, moves0, GameMove(g_deck[12], BUY_CARD)));
+
+    EXPECT_EQ(0.5, scoreOf(scores1, moves1, GameMove(g_deck[12], BUY_CARD)));
+    EXPECT_EQ(0.5, scoreOf(scores1, moves1, GameMove(g_deck[18], BUY_CARD)));
+    EXPECT_EQ(0.0, scoreOf(scores1, moves1, GameMove(g_deck[26], BUY_CARD))); // Already has 6 of these
+    EXPECT_EQ(0.0, scoreOf(scores1, moves1, GameMove(g_deck[40], BUY_CARD))); // Already has 4 of these
+
+    EXPECT_EQ(0.50, scoreOf(scores2, moves2, GameMove(g_deck[12], BUY_CARD)));
+    EXPECT_EQ(0.50, scoreOf(scores2, moves2, GameMove(g_deck[18], BUY_CARD)));
+    EXPECT_EQ(0.25, scoreOf(scores2, moves2, GameMove(g_deck[40], BUY_CARD))); // Don't have enough yet
 }

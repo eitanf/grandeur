@@ -90,4 +90,9 @@ Scores countReturns(const Moves& moves, const player_id_t pid, const Board& curB
 Scores preferShortGame(const Moves& moves, const player_id_t pid, const Board& curBoard,
                        const std::vector<Board>& newBoards);
 
+// Prefer a card buy that gets us closer to acquiring noble(s)
+Scores preferBuyTowardNoble(const Moves& moves, const player_id_t pid, const Board& curBoard,
+                            const std::vector<Board>& newBoards);
+
+
 }  // namespace
