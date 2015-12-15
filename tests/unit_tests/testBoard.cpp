@@ -313,8 +313,8 @@ TEST_F(MidGameBoard, invalidBuy)
 {
     EXPECT_EQ(board_.buyCard(1, { LOW, 58 }, NULL_CARD), UNAVAILABLE_CARD);
     EXPECT_EQ(board_.buyCard(1, { LOW, -10 }, NULL_CARD), UNAVAILABLE_CARD);
-    EXPECT_EQ(board_.buyCard(1, { LOW, CardID::WILDCARD }, NULL_CARD), BUY_WILDCARD);
-    EXPECT_EQ(board_.buyCard(1, { LOW, CardID::NULLCARD}, NULL_CARD), UNAVAILABLE_CARD);
+    EXPECT_EQ(board_.buyCard(1, { LOW, WILDCARD }, NULL_CARD), BUY_WILDCARD);
+    EXPECT_EQ(board_.buyCard(1, { LOW, NULLCARD}, NULL_CARD), UNAVAILABLE_CARD);
 }
 
 

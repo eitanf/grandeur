@@ -20,7 +20,8 @@ enum gem_color_t {
     WHITE = 0, TEAL = 1, GREEN = 2, RED = 3, BLACK = 4, YELLOW = 5
 };
 
-static constexpr char color2char[] = { 'W', 'T', 'G', 'R', 'B', 'Y' };
+static constexpr unsigned NCOLOR = 6;
+static constexpr char color2char[NCOLOR] = { 'W', 'T', 'G', 'R', 'B', 'Y' };
 
 
 class Gems {
@@ -71,7 +72,6 @@ class Gems {
     bool operator==(const Gems& rhs) const { return gems_ == rhs.gems_; }
     bool operator!=(const Gems& rhs) const { return !(*this == rhs); }
 
-    static constexpr unsigned NCOLOR = 6;
   private:
     std::array<gem_count_t, NCOLOR> gems_;
 };

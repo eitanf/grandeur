@@ -26,8 +26,6 @@ struct CardID {
     }
 
     using seq_t = int;
-    static constexpr seq_t WILDCARD = -1;  // Flag value for any card of deck.
-    static constexpr seq_t NULLCARD = -2;  // Flag value for unset card.
 
     deck_t type_;
     seq_t seq_;
@@ -35,6 +33,9 @@ struct CardID {
 
 std::ostream& operator<<(std::ostream&, const CardID&);
 
+
+static constexpr CardID::seq_t WILDCARD = -1;  // Flag value for any card of deck.
+static constexpr CardID::seq_t NULLCARD = -2;  // Flag value for unset card.
 
 // Each card has a unique identifier, resource cost in gems, the permanent gem
 // color it will discount, and a number of prestige points it awards (can be zero)
@@ -49,8 +50,8 @@ struct Card {
     Card& operator=(Card&&) = default;
 
     bool operator==(const Card& rhs) const { return id_ == rhs.id_; }
-    constexpr bool isNull() const { return id_.seq_ == CardID::NULLCARD; }
-    constexpr bool isWild() const { return id_.seq_ == CardID::WILDCARD; }
+    constexpr bool isNull() const { return id_.seq_ == NULLCARD; }
+    constexpr bool isWild() const { return id_.seq_ == WILDCARD; }
 
     CardID id_;
     Gems cost_;
@@ -62,12 +63,12 @@ std::ostream& operator<<(std::ostream&, const Card&);
 
 
 // Define an "empty" card:
-static constexpr Card NULL_CARD = { { LOW, CardID::NULLCARD }, { }, YELLOW, 0 };
+static constexpr Card NULL_CARD = { { LOW, NULLCARD }, { }, YELLOW, 0 };
 
-// Define Wildcards, one per decC:
-static constexpr Card LOW_CARD = { { LOW, CardID::WILDCARD }, { }, YELLOW, 0 };
-static constexpr Card MEDIUM_CARD = { { MEDIUM, CardID::WILDCARD }, { }, YELLOW, 0 };
-static constexpr Card HIGH_CARD = { { HIGH, CardID::WILDCARD }, { }, YELLOW, 0 };
+// Define Wildcards, one per deck:
+static constexpr Card LOW_CARD = { { LOW, WILDCARD }, { }, YELLOW, 0 };
+static constexpr Card MEDIUM_CARD = { { MEDIUM, WILDCARD }, { }, YELLOW, 0 };
+static constexpr Card HIGH_CARD = { { HIGH, WILDCARD }, { }, YELLOW, 0 };
 
 //////////////////////////////////////////////////////////////////////////////
 ///// Operations on collections of cards (decks):

@@ -118,7 +118,7 @@ Board::buyCard(player_id_t pid, CardID cid, const Card& replacement)
     }
 
     ///// Next, check for bad user inputs:
-    if (cid.seq_ == CardID::WILDCARD) {
+    if (cid.seq_ == WILDCARD) {
         return BUY_WILDCARD;
     }
 
