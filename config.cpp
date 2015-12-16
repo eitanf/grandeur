@@ -5,6 +5,7 @@
 #include "config.h"
 #include "move.h"
 #include "move_notifier.h"
+#include "noble.h"
 
 #include <iostream>
 #include <tbb/task_scheduler_init.h>
@@ -53,10 +54,7 @@ Config::Config(const std::vector<std::string>& args)
 /////////////////////////////////////////////////////////////
 Config::~Config()
 {
-    for (auto p : players_) {
-        delete p;
-    }
-
+    resetPlayers(Players(players_.size(), nullptr));
     if (loggerPtr_) {
         delete loggerPtr_;
     }
@@ -83,5 +81,34 @@ Config::die(const string msg) {
     exit(-1);
 }
 
+
+Board
+Config::createBoard(Cards& deck)
+{
+    // Copy initial 12 cards to initial and remove from deck
+    Cards initialCards;
+    for (int dt = LOW; dt <= HIGH; ++dt) {
+        for (unsigned i = 0; i < INITIAL_DECK_NCARD; ++i) {
+            initialCards.push_back(popFromDeck(deck_t(dt), deck));
+        }
+    }
+
+    // Copy, shuffle, and truncate nobles
+    vector<Noble> nobles(begin(g_nobles), end(g_nobles));
+    shuffle(begin(nobles), end(nobles), prng_);
+    nobles.erase(nobles.begin() + g_noble_allocation[players_.size()], nobles.end());
+
+    return (Board(players_.size(), initialCards, nobles));
+}
+
+
+void
+Config::resetPlayers(const Players& newPlayers)
+{
+    for (auto p : players_) {
+        delete p;
+    }
+    players_ = newPlayers;
+}
 
 }  // namespace

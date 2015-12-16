@@ -27,6 +27,12 @@ class Config {
     // Exit program with error message:
     void die(const std::string msg = "");
 
+    // Shuffle cards and nobles to create randomized game Board:
+    Board createBoard(Cards& deck);
+
+    // Delete old player and replace with new ones:
+    void resetPlayers(const Players& newPlayers);
+
     std::mt19937_64 prng_; // A PRNG to initialize game state:
     Players players_;
     unsigned nthread_ = 0;  // No. of threads to run
