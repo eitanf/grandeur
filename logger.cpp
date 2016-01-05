@@ -14,6 +14,7 @@ namespace grandeur {
 struct Logger::Impl {
   public:
     Impl(const string& fn) : ofile_(fn), firstTime_(true) {}
+    ~Impl() { ofile_.close(); }
 
     ofstream ofile_;
     bool firstTime_;
@@ -21,18 +22,11 @@ struct Logger::Impl {
 
 /////////////////////////////////////////////////////////////
 Logger::Logger(const string& fn)
-        : pImpl_(new Impl(fn))
+        : pImpl_(new Impl(fn), [](Impl* impl){ delete impl; })
 {
     if (!pImpl_->ofile_.is_open()) {
         throw std::runtime_error("Can't write to file" + fn);
     }
-}
-
-
-/////////////////////////////////////////////////////////////
-Logger::~Logger()
-{
-    pImpl_->ofile_.close();
 }
 
 

@@ -60,10 +60,9 @@ class PlayerFactory {
 
   private:
     struct Impl;
-    std::unique_ptr<Impl> pImpl;
+    std::unique_ptr<Impl, void (*)(Impl*)> pImpl_;
 
     PlayerFactory();
-    ~PlayerFactory();
     PlayerFactory(const PlayerFactory&) = delete;
     PlayerFactory& operator=(const PlayerFactory&) = delete;
 };

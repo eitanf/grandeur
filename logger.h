@@ -17,12 +17,11 @@ namespace grandeur {
 struct Logger {
   public:
     Logger(const std::string& fn);
-    ~Logger();
     void log(MoveEvent, const Board&, player_id_t, const MoveNotifier::Payload&);
 
   private:
     struct Impl;
-    std::unique_ptr<Impl> pImpl_;
+    std::unique_ptr<Impl, void (*)(Impl*)> pImpl_;
 };
 
 
