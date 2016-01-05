@@ -92,12 +92,22 @@ static const auto allEval =
                   monopolizeGems, preferWildcards, countReturns, preferShortGame, preferBuyTowardNoble },
                 { 100, 2, 1, 1, 0, 0, 0, -1, 1, 2 });
 
+static const auto allEval2 =
+        combine({ winCondition, countPoints, countPrestige, countGems, countMoves,
+                  monopolizeGems, preferWildcards, countReturns, preferShortGame, preferBuyTowardNoble },
+                { 100, 1.5, 1, 1, 2.25, -0.25, 0, -1, 1, 2.5 });
 
-static PlayerFactory::Registrator regs3("special-3",
+
+                static PlayerFactory::Registrator regs3("special-3",
                                        [](player_id_t pid){ return new MinimaxPlayer(3, allEval, pid, 0.01); });
 
 static PlayerFactory::Registrator regs4("special-4",
                                         [](player_id_t pid){ return new MinimaxPlayer(4, allEval, pid, 0.01); });
 
+static PlayerFactory::Registrator regs5("special-5",
+                                        [](player_id_t pid){ return new MinimaxPlayer(5, allEval, pid, 0.01); });
+
+static PlayerFactory::Registrator regs6("special-6",
+                                        [](player_id_t pid){ return new MinimaxPlayer(6, allEval, pid, 0.01); });
 
 } // namespace
