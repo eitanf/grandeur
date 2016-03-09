@@ -74,19 +74,6 @@ static const auto comboEval =
         combine({ winCondition, countPoints, countPrestige },
                 { 100,          2,           1 } );
 
-static PlayerFactory::Registrator reg1("minimax-1",
-                  [](player_id_t pid){ return new MinimaxPlayer(1, comboEval, pid); });
-static PlayerFactory::Registrator reg2("minimax-2",
-                  [](player_id_t pid){ return new MinimaxPlayer(2, comboEval, pid); });
-static PlayerFactory::Registrator reg3("minimax-3",
-                  [](player_id_t pid){ return new MinimaxPlayer(3, comboEval, pid, 0.01); });
-static PlayerFactory::Registrator reg4("minimax-4",
-                  [](player_id_t pid){ return new MinimaxPlayer(4, comboEval, pid, 0.01); });
-static PlayerFactory::Registrator reg5("minimax-5",
-                  [](player_id_t pid){ return new MinimaxPlayer(5, comboEval, pid); });
-static PlayerFactory::Registrator reg6("minimax-6",
-                  [](player_id_t pid){ return new MinimaxPlayer(6, comboEval, pid); });
-
 static const auto allEval =
         combine({ winCondition, countPoints, countPrestige, countGems, countMoves,
                   monopolizeGems, preferWildcards, countReturns, preferShortGame, preferBuyTowardNoble },
@@ -98,16 +85,24 @@ static const auto allEval2 =
                 { 100, 1.5, 1, 1, 2.25, -0.25, 0, -1, 1, 2.5 });
 
 
-                static PlayerFactory::Registrator regs3("special-3",
+static PlayerFactory::Registrator regs1("minimax-1",
+                                       [](player_id_t pid){ return new MinimaxPlayer(1, allEval, pid, 0.01); });
+
+static PlayerFactory::Registrator regs2("minimax-2",
+                                       [](player_id_t pid){ return new MinimaxPlayer(2, allEval, pid, 0.01); });
+
+static PlayerFactory::Registrator regs3("minimax-3",
                                        [](player_id_t pid){ return new MinimaxPlayer(3, allEval, pid, 0.01); });
 
-static PlayerFactory::Registrator regs4("special-4",
+static PlayerFactory::Registrator regs4("minimax-4",
                                         [](player_id_t pid){ return new MinimaxPlayer(4, allEval, pid, 0.01); });
 
-static PlayerFactory::Registrator regs5("special-5",
+static PlayerFactory::Registrator regs5("minimax-5",
                                         [](player_id_t pid){ return new MinimaxPlayer(5, allEval, pid, 0.01); });
 
-static PlayerFactory::Registrator regs6("special-6",
+static PlayerFactory::Registrator regs6("minimax-6",
                                         [](player_id_t pid){ return new MinimaxPlayer(6, allEval, pid, 0.01); });
 
+static PlayerFactory::Registrator regs7("minimax-7",
+                                        [](player_id_t pid){ return new MinimaxPlayer(7, allEval, pid, 0.01); });
 } // namespace

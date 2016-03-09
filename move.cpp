@@ -1,5 +1,6 @@
+// moves.cpp: Main game loop and move legality verifier.
 //
-// Created by eitan on 11/18/15.
+// Created by Eitan Frachtenberg on 11/18/15.
 //
 
 #include <cassert>
@@ -312,7 +313,6 @@ playerMove(Board& board, player_id_t pid, Cards& deck,
 
 
 ///////////////////////////////////////////////////////////////////
-// TODO: Bypass mode that skips all the error checks in make move, if a move is forced to be legal.
 player_id_t
 mainGameLoop(Board& board, Cards& deck, Players& players)
 {
