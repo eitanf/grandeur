@@ -17,11 +17,12 @@
 
 namespace grandeur {
 
-enum class MoveEvent { GAME_BEGAN = 0,  // Start a game
-                       MOVE_TAKEN,      // A game move was made
-                       NOBLE_WON,       // A noble was won
-                       GAME_WON,        // The game ended with a player winning
-                       TIE              // The game ended with nobody winning
+enum class MoveEvent { GAME_BEGAN = 0,   // Start a game
+                       MOVE_TAKEN,       // A game move was made
+                       NOBLE_WON,        // A noble was won
+                       REPLACEMENT_CARD, // A new card was popped from the deck
+                       GAME_WON,         // The game ended with a player winning
+                       TIE               // The game ended with nobody winning
 };
 
 
@@ -31,10 +32,12 @@ class MoveNotifier {
     union Payload {
         Payload(const GameMove& mv) : mv_(mv) {}
         Payload(const Noble& noble) : noble_(noble) {}
+        Payload(const Card& card) : replacement_(card) {}
         Payload() : mv_(NULL_MOVE) {}
 
         GameMove mv_;
         Noble noble_;
+        Card replacement_;
     };
 
     using observer_t = std::function<

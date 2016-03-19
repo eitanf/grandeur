@@ -285,6 +285,7 @@ playerMove(Board& board, player_id_t pid, Cards& deck,
     case BUY_CARD:
         if (cardIn(pMove.payload_.card_.id_, board.tableCards())) {
             replacement = popFromDeck(payloadCard.id_.type_, deck);
+            MoveNotifier::instance().notifyObservers(MoveEvent::REPLACEMENT_CARD, board, pid, replacement);
         }
         break;
     }

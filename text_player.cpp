@@ -103,6 +103,9 @@ TextPlayer::moveUpdater(MoveEvent event, const Board& board, player_id_t pid,
     case MoveEvent::TIE:
         os_ << "GAME OVER! Stalemate!\n";
         break;
+
+    default:
+        break;
     }
 }
 

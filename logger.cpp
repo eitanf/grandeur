@@ -39,17 +39,25 @@ Logger::log(MoveEvent event, const Board& board, player_id_t pid,
     case MoveEvent::GAME_BEGAN:
         pImpl_->ofile_ << "Initial board state:\n" << board << "\n";
         break;
+
     case MoveEvent::MOVE_TAKEN:
         pImpl_->ofile_ << "Player " << pid << " made move: " << payload.mv_ << "\n";
         pImpl_->ofile_ << "New board state for round " << board.roundNumber()
                        << ":\n" << board << endl;
         break;
+
     case MoveEvent::NOBLE_WON:
         pImpl_->ofile_ << "Player " << pid << " won noble: " << payload.noble_ << "!\n\n";
         break;
+
+    case MoveEvent::REPLACEMENT_CARD:
+        pImpl_->ofile_ << "Card " << payload.replacement_.id_ << " drawn from deck\n";
+        break;
+
     case MoveEvent::GAME_WON:
         pImpl_->ofile_ << "GAME OVER! Player " << pid << " wins!\n";
         break;
+
     case MoveEvent::TIE:
         pImpl_->ofile_ << "GAME OVER! Stalemate!\n";
         break;
