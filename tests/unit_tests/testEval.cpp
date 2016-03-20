@@ -9,6 +9,8 @@
 #include "eval.h"
 #include "move.h"
 
+#include <algorithm>
+
 using namespace grandeur;
 using namespace std;
 
@@ -285,4 +287,20 @@ TEST_F(LateGameBoard, preferBuyTowardNoble)
     EXPECT_EQ(0.50, scoreOf(scores2, moves2, GameMove(g_deck[12], BUY_CARD)));
     EXPECT_EQ(0.50, scoreOf(scores2, moves2, GameMove(g_deck[18], BUY_CARD)));
     EXPECT_EQ(0.25, scoreOf(scores2, moves2, GameMove(g_deck[40], BUY_CARD))); // Don't have enough yet
+}
+
+// Test that drawing a card for the deck makes it available for purchase and it ranks
+// highest in a greedy setting.
+TEST_F(LateGameBoard, cardDraw)
+{
+    const auto allEval2 =
+            combine({ winCondition, countPoints, countPrestige, countGems, countMoves,
+                      monopolizeGems, preferWildcards, countReturns, preferShortGame, preferBuyTowardNoble },
+                    { 100, 1.5, 1, 1, 2.25, -0.25, 0, -1, 1, 2.5 });
+
+    RESERVE(0, g_deck[71], g_deck[15]);
+    const auto moves = legalMoves(board_, 0);
+    const auto scores = playerScores(0, allEval2);
+    const auto max_score = *std::max_element(std::begin(scores), std::end(scores));
+    EXPECT_EQ(max_score, scoreOf(scores, moves, GameMove(g_deck[15], BUY_CARD)));
 }
